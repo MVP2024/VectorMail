@@ -15,6 +15,9 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/env/Include" />
+      <excludeFolder url="file://$MODULE_DIR$/env/Lib" />
+      <excludeFolder url="file://$MODULE_DIR$/env/Scripts" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.13 (VectorMail)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
