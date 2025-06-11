@@ -1,7 +1,4 @@
 [flake8]
-max-line-length = 88
-exclude = .git,.idea,venv
-[flake8]
 max-line-length = 120
 exclude =
     .git,
@@ -10,4 +7,5 @@ exclude =
     .venv,
     dist,
     .idea,
-    .env
+    .env,
+    venv
