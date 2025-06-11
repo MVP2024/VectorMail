@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.core.mail import send_mail
 from django.conf import settings
-from mailing_service.models import Mailing, Client
+from mailing_service.models import Mailing
 
 class Command(BaseCommand):
     help = 'Sends a specific mailing by its ID.'
