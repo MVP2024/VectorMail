@@ -1,4 +1,3 @@
-# mailing_service/models.py
 from django.db import models
 
 class Client(models.Model):
