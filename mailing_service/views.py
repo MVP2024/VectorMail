@@ -5,6 +5,7 @@ from django.conf import settings
 from .forms import MailingSendForm
 from .models import Mailing
 
+
 def send_mailing_view(request):
     if request.method == 'POST':
         form = MailingSendForm(request.POST)
@@ -12,7 +13,8 @@ def send_mailing_view(request):
             mailing = form.cleaned_data['mailing']
 
             if not mailing.recipients.exists():
-                messages.warning(request, f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) не имеет получателей. Письма не отправлены.')
+                messages.warning(request,
+                                 f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) не имеет получателей. Письма не отправлены.')
                 return redirect('send_mailing')
 
             sent_count = 0
@@ -31,9 +33,16 @@ def send_mailing_view(request):
                     sent_count += 1
                 except Exception as e:
                     failed_count += 1
-                    messages.error(request, f'Не удалось отправить письмо на {recipient.email}: {e}')
+                    error_detail = str(e)
+                    user_friendly_message = f"Не удалось отправить письмо на {recipient.email}. "
 
-            messages.success(request, f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
+                    if "getaddrinfo failed" in error_detail:
+                        user_friendly_message += "Проверьте настройки почтового сервера (EMAIL_HOST, EMAIL_PORT) или сетевое подключение."
+                    else:
+                        user_friendly_message += f"Причина: {error_detail}"
+
+            messages.success(request,
+                             f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
 
             # Изменяем статус рассылки на «Запущена», если он был «Создан»
             if mailing.status == Mailing.STATUS_CREATED:
