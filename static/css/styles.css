@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+/* Основная обертка для Flexbox-макета */
+.main-wrapper {
+    display: flex;
+    min-height: 100vh; /* Обертка занимает всю высоту вьюпорта */
+}
+/* Стили сайдбара */
+.sidebar {
+    width: 250px; /* Фиксированная ширина сайдбара */
+    background-color: #e0f2f7; /* Светло-голубой фон как на макете */
+    padding: 15px;
+    border-right: 1px solid #dee2e6; /* Разделительная линия */
+    display: flex;
+    flex-direction: column; /* Для вертикального выравнивания содержимого */
+}
+/* Стили изображения логотипа в сайдбаре */
+.sidebar .logo-section img {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+/* Стили элементов навигации */
+.sidebar .nav-link {
+    color: #333; /* Темный текст для ссылок */
+    padding: 12px 18px; /* Увеличенный внутренний отступ для лучшего вида кнопки */
+    border-radius: 8px; /* Скругленные углы */
+    display: block; /* Делаем всю область ссылки кликабельной */
+    background-color: rgba(66, 155, 139, 0.73); /* Белый фон для остальных ссылок */
+    box-shadow: 0 4px 10px rgba(0,0,0,.12); /* Более выраженная тень в обычном состоянии */
+    transition: all 0.2s ease-in-out; /* Плавный переход для эффектов */
+    margin-bottom: 10px; /* Увеличенный отступ между элементами для лучшего разделения */
+    font-size: 1.1em; /* Чуть больший размер шрифта */
+    font-weight: 500; /* Средний вес шрифта для более стильного вида */
+}
+.sidebar .nav-link:hover {
+    background-color: #b3e0ff; /* Более яркий светло-голубой фон при наведении */
+    text-decoration: None; /* Убираем подчеркивание при наведении */
+    box-shadow: 0 8px 16px rgba(0,0,0,.25); /* Еще более выраженная тень при наведении */
+    transform: translateY(-3px); /* Более заметный подъем при наведении */
+}
+
+/* Стили для кнопки профиля */
+.sidebar #userDropdown {
+    background-color: #4CAF50; /* Яркий зеленый фон для кнопки профиля */
+    padding: 25px; /* Более квадратная форма */
+    color: #000d94; /* синий текст для контраста с зеленым фоном */
+    box-shadow: 0 6px 12px rgba(0,0,0,.2); /* Более выраженная тень для этой кнопки */
+}
+
+.sidebar #userDropdown:hover {
+    background-color: rgba(197, 231, 131, 0.66); /* Темнее зеленый при наведении */
+    box-shadow: 0 8px 16px rgba(0,0,0,.3); /* Еще более выраженная тень при наведении */
+}
+
+/* Область контента */
+.content-area {
+    flex: 1; /* Область контента занимает оставшееся пространство */
+    padding: 20px;
+    display: flex;
+    flex-direction: column; /* Для прижатия футера к низу */
+    background-color: #fff; /* Белый фон для области контента */
+}
+.content-area main {
+    flex: 1; /* Блок основного контента занимает оставшееся пространство */
+}
+.content-area footer {
+    margin-top: auto; /* Прижимаем футер к низу области контента */
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+/* Custom colors for sidebar links */
+.text-created {
+    color: #FFD700; /* Yellow */
+}
+
+.text-running {
+    color: #28a745; /* Green */
+}
+
+.text-completed {
+    color: #dc3545; /* Red */
+}
+
+/* Новый красивый шрифт */
+.beautiful-underline {
+    text-decoration: none;
+    border-bottom: 2px solid #0d6efd; /* Использование прямого HEX-кода для надежности */
+    padding-bottom: 2px;
+    display: inline;
+    font-family: 'Great Vibes', cursive; /* Применяем новый шрифт */
+    font-size: 1.8em; /* Увеличим размер для лучшей читаемости */
+}
+
+/* Стили для кнопок внутри футера карточек рассылок */
+.card-footer .btn {
+    font-size: 0.80em; /* Уменьшаем размер шрифта */
+    padding: 0.6em 0.8em; /* Немного уменьшаем отступы */
+}
