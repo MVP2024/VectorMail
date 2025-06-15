@@ -34,64 +34,172 @@ VectorMail — это Django-приложение для управления э
    cd VectorMail
    ```
 
-2. **Виртуальное окружение**
+2. **База данных**
+   - Установите PostgreSQL
+   - Создайте базу данных и пользователя согласно .env
+
+3. **Виртуальное окружение**
 
     ```
-    python -m venv .venv
-    .venv\Scripts\activate  # Windows
-    source .venv/bin/activate  # Linux/macOS
+        python -m venv .venv
+        .venv\Scripts\activate  # Windows
+        source .venv/bin/activate  # Linux/macOS
     ```
-3. **Зависимости**
+4. **Зависимости**
 
     ```
-    pip install -r requirements.txt
+        pip install -r requirements.txt
     ```
 
-4. **Переменные окружения**
+5. **Переменные окружения**
+
     ```
-   copy .env.example .env  # Windows
-   # cp .env.example .env # Linux/macOS
+       copy .env.example .env  # Windows
+       # cp .env.example .env # Linux/macOS
+    ```
 
-   ```
-5. **Миграции**
+6. **Миграции**
 
-    ```python manage.py migrate```
+    ```
+       python manage.py migrate
+   
+    ```
 
-6. **Суперпользователь**
+7**Суперпользователь**
 
-    ```python manage.py createsuperuser```
+    ```
+        python manage.py createsuperuser
+    ```
 
-7. ***Тестовые данные***
+8***Тестовые данные***
 
-    ```python -Xutf8 manage.py load_initial_data```
+    ```
+        python -Xutf8 manage.py load_initial_data
+    ```
 
-8. **Запуск**
+9**Запуск**
 
-    ```python manage.py runserver```
+    ```
+        python manage.py runserver
+    ```
+
+## 🧪 Команды управления
+
+- Отправка рассылки по ID:
+    
+    ``` 
+        python manage.py send_mailing <mailing_id>
+        
+    ```
+
+- Загрузка тестовых данных:
+    ```
+        python manage.py load_initial_data
+    ```
+
+## 🛠️ Установка Redis
+
+### Установка
+**Windows**:
+1. Скачайте Redis с [официального репозитория](https://github.com/microsoftarchive/redis/releases)
+2. Установите через установщик или запустите `redis-server.exe` напрямую
+
+**Linux**:
+    ```
+        sudo apt update
+        sudo apt install redis
+    ```
+
+### Запуск
+
+**Windows:**
+    ```
+        redis-server.exe
+    ```
+
+**LINUX**
+
+    ```
+        sudo service redis start
+        # Или
+        redis-server
+    ```
+
+**Проверка**
+
+    ```
+       redis-cli ping
+        # Ожидаемый ответ: PONG 
+    ```
+
+**Для мониторирования**
+
+    ```
+        redis-cli MONITOR
+    ```
+
+## ⚠️ Redis требуется для работы кеширования (настроен в settings.py через CACHES). 
+## Убедитесь, что сервер запущен перед использованием приложения.
+
+## ⚠️ Важно
+
+- Для Windows используйте -Xutf8 при загрузке данных
+- Убедитесь, что Redis запущен: redis-server
+- Настройте EMAIL_BACKEND в .env для реальной отправки писем
+- MEDIA_ROOT (media/) должен быть доступен для записи
+
+## 🧑‍💼 Управление пользователями
+- Расширенная модель пользователя с полями: отчество, дата рождения, телефон, аватар
+- Ручная активация аккаунтов администратором
+- Система восстановления пароля (сброс по email)
+- Админ-панель с управлением статусом пользователей (актив/заблокирован)
+- Валидация аватаров (форматы JPEG/PNG/GIF, ограничение 5МБ)
+
+## 🔄 Дополнительные возможности
+- Кеширование на Redis (время жизни 5 минут, сжатие zlib)
+- Локализация на русский язык (LANGUAGE_CODE = "ru")
+- Автоматическое обновление кеша (UpdateCacheMiddleware)
+- Система уведомлений через messages framework
+
+## 🛠️ Установка (дополнительно)
+- **Миграции для users**: `python manage.py migrate users`
+- **Email-конфигурация**: Настройте SMTP-параметры в `.env` для активации аккаунтов
+- **Redis**: Убедитесь, что Redis-сервер запущен на `redis://127.0.0.1:6379/1`
 
 ## 📁 Структура проекта
 
-    ```
-    VectorMail/
-    ├── mailing_service/          # Основное приложение
-    │   ├── models.py             # Модели: Client, Message, Mailing
-    │   ├── admin.py              # Регистрация в админке
-    │   ├── forms.py              # Формы для веб-интерфейса
-    │   └── management/commands/  # Пользовательские команды
-    ├── VectorMail/               # Настройки проекта
-    ├── templates/                # HTML-шаблоны
-    ├── static/                   # Статические файлы
-    ├── media/                    # Медиафайлы
-    ├── .env                      # Конфиденциальные настройки
-    └── README.md                 # Документация
-    
-    ```
+VectorMail/
+├── mailing_service/ # Приложение для управления рассылками
+│ ├── models.py # Модели: Mailing, Message, Recipient
+│ ├── views.py # Логика управления рассылками
+│ ├── templates/ # Шаблоны для рассылок и управления
+│ └── fixtures/ # Тестовые данные (initial_data.json)
+├── users/ # Приложение пользователей
+│ ├── models.py # Расширенная модель User
+│ ├── forms.py # Формы регистрации/профиля
+│ └── templates/ # Шаблоны аутентификации и профиля
+├── static/ # Статические файлы (CSS, JS)
+├── media/ # Загрузка аватаров и других файлов
+└── VectorMail/ # Основной проект
+├── settings.py # Настройки Redis, email, кеширования
+└── urls.py # Маршруты приложений
+
+## 📧 Email-функционал
+
+- Активация аккаунта: Отправка ссылки на email с токеном
+- Сброс пароля: Шаблоны и логика для password_reset
+- Рассылки: Настройка SMTP в .env для реальной отправки
+
+🛠️ Установка (полная)
 
 ## 📌 Примечания
 
 - Для Windows используйте -Xutf8 при загрузке данных
 - В .env настройте EMAIL_BACKEND для тестирования или реальной отправки
 - Данные фикстур находятся в mailing_service/fixtures/initial_data.json
+- Для работы с Redis установите и запустите сервер Redis
+- В `.env` обязательно настройте параметры EMAIL_* для функций активации и сброса пароля
+- При работе с аватарами убедитесь, что MEDIA_ROOT доступен для записи
 
 ## 📦 Лицензия
 
