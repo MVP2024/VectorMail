@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактирование профиля{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mt-5">
+                    <div class="card-header text-center">
+                        <h3>Редактирование профиля</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data"> {# Добавлен enctype для загрузки аватара #}
+                            {% csrf_token %}
+                            <div class="row mb-4 align-items-center">
+                                <div class="col-md-4 text-center">
+                                    {% if user.avatar %}
+                                        <img src="{{ user.avatar.url }}" alt="Изображение профиля"
+                                             class="img-fluid rounded border p-2"
+                                             style="max-width: 150px; height: auto;">
+                                    {% else %}
+                                        <i class="bi bi-person-circle" style="font-size: 8em; color: #6c757d;"></i>
+                                        {# Используем иконку Bootstrap Icons #}
+                                        <p class="mt-2">Avatar/Foto</p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-8">
+                                    {# Отображаем поле аватара отдельно, чтобы оно было под изображением #}
+                                    <div class="mb-3">
+                                        <label for="{{ form.avatar.id_for_label }}" class="form-label">Загрузить
+                                            аватар</label>
+                                        {{ form.avatar }}
+                                        {% if form.avatar.errors %}
+                                            <div class="text-danger">{{ form.avatar.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% for field in form %}
+                                {% if field.name != 'avatar' %}
+                                    {# Пропускаем поле аватара, так как оно уже отображено #}
+                                    <div class="row mb-3">
+                                        <label for="{{ field.id_for_label }}"
+                                               class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                        <div class="col-sm-8">
+                                            {{ field }}
+                                            {% if field.help_text %}
+                                                <div class="form-text">{{ field.help_text }}</div>
+                                            {% endif %}
+                                            {% for error in field.errors %}
+                                                <div class="alert alert-danger mt-1">{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            <button type="submit" class="btn btn-primary w-100">Сохранить изменения</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

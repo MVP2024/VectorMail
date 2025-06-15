@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if is_edit %}Редактировать сообщение{% else %}Добавить новое сообщение{% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0">
+                            {% if is_edit %}Редактировать сообщение{% else %}Добавить новое сообщение{% endif %}
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="mb-3 row align-items-center">
+                                <label for="{{ form.subject.id_for_label }}"
+                                       class="col-sm-4 col-form-label">Тема письма</label>
+                                <div class="col-sm-8">
+                                    {{ form.subject }}
+                                    {% if form.subject.errors %}
+                                        <div class="text-danger">{{ form.subject.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-4 row">
+                                <label for="{{ form.body.id_for_label }}"
+                                       class="col-sm-4 col-form-label">Сообщение</label>
+                                <div class="col-sm-8">
+                                    {{ form.body }}
+                                    {% if form.body.errors %}
+                                        <div class="text-danger">{{ form.body.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-start gap-3">
+                                <button type="submit" class="btn btn-success">Сохранить</button>
+                                {% if is_edit %}
+                                    <a href="{% url 'edit_message' object.pk %}" class="btn btn-warning text-dark">Редактировать</a>
+                                    <a href="{% url 'delete_message' object.pk %}" class="btn btn-danger">Удалить</a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col text-end">
+                <a href="{% url 'messages' %}" class="btn btn-outline-secondary">Вернуться в мои сообщения</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

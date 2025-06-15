@@ -1,0 +1,12 @@
+{% autoescape off %}
+Привет, {{ user.username }}!
+
+Пожалуйста, нажмите на ссылку ниже, чтобы подтвердить ваш email и активировать аккаунт:
+
+http://{{ domain }}{% url 'users:activate' uidb64=uid token=token %}
+
+Если вы не регистрировались на VectorMail, пожалуйста, проигнорируйте это письмо.
+
+С уважением,
+Команда VectorMail
+{% endautoescape %}

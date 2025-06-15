@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Ошибка активации{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mt-5">
+                    <div class="card-header text-center">
+                        <h3>Ошибка активации аккаунта</h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <p>К сожалению, ссылка активации недействительна или срок ее действия истек.</p>
+                        <p>Пожалуйста, попробуйте зарегистрироваться снова или свяжитесь с поддержкой, если проблема
+                            повторяется.</p>
+                        <a href="{% url 'users:register' %}" class="btn btn-primary mt-3">Зарегистрироваться снова</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

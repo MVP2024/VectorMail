@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Функционал VectorMail{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h1 class="mb-4 text-center">Доступный функционал VectorMail</h1>
+
+        {% for category, features in categorized_features.items %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">{{ category }}</h4>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for feature in features %}
+                            {% if feature.staff_only and not request.user.is_staff %}
+                                {# Пропускаем, если это только для персонала, а пользователь не персонал #}
+                            {% else %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="{{ feature.url }}" class="fw-bold">{{ feature.name }}</a>
+                                        <p class="text-muted mb-0">{{ feature.description }}</p>
+                                    </div>
+                                    {% if feature.staff_only %}
+                                        <span class="badge bg-warning text-dark">Только для персонала</span>
+                                    {% endif %}
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="row mt-4">
+            <div class="col text-center">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">Вернуться на главную</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

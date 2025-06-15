@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Попытки рассылок{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Попытки рассылок</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Рассылка (Тема сообщения)</th>
+                    <th>Получатель (Email)</th>
+                    <th>Дата и время попытки</th>
+                    <th>Статус</th>
+                    <th>Сообщение об ошибке</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in attempts %}
+                <tr>
+                    <td>{{ attempt.mailing.message.subject }}</td>
+                    <td>{{ attempt.recipient.email }}</td>
+                    <td>{{ attempt.sent_at|date:"d.m.Y H:i:s" }}</td>
+                    <td>
+                        {% if attempt.status == 'success' %}
+                            <span class="badge bg-success">{{ attempt.get_status_display }}</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ attempt.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ attempt.error_message|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">Пока нет записей о попытках рассылок.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col text-center">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">Вернуться на главную</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

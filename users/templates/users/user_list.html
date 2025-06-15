@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Управление пользователями{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Управление пользователями</h1>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Имя пользователя</th>
+                    <th>Email</th>
+                    <th>Имя</th>
+                    <th>Фамилия</th>
+                    <th>Отчество</th>
+                    <th>Активен</th>
+                    <th>Персонал</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user_obj in users %}
+                <tr>
+                    <td>{{ user_obj.username }}</td>
+                    <td>{{ user_obj.email }}</td>
+                    <td>{{ user_obj.first_name|default:"-" }}</td>
+                    <td>{{ user_obj.last_name|default:"-" }}</td>
+                    <td>{{ user_obj.patronymic|default:"-" }}</td>
+                    <td>
+                        {% if user_obj.is_active %}
+                            <span class="badge bg-success">Да</span>
+                        {% else %}
+                            <span class="badge bg-danger">Нет</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user_obj.is_staff %}
+                            <span class="badge bg-info">Да</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Нет</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user_obj != request.user %} {# Не позволяем пользователю блокировать/разблокировать себя #}
+                            <form action="{% url 'users:toggle_user_active_status' user_obj.pk %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm {% if user_obj.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                                    {% if user_obj.is_active %}Заблокировать{% else %}Разблокировать{% endif %}
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-sm btn-secondary" disabled>Это вы</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">Пользователи не найдены.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col text-center">
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary">Вернуться на главную</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

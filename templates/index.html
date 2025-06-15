@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h1 class="text-center">Добро пожаловать в </h1>
+        <h2 class="text-center"><img src="{% static 'images/logo.gif' %}" alt="VectorMail Logo"></h2>
+        <!-- Добавьте здесь любой контент, который вы хотите видеть на главной странице -->
+        {% if user.is_authenticated %}
+            <div class="row mt-5 justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h4 class="mb-0 text-center">Ваша статистика</h4>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Всего рассылок:
+                                    <span class="badge bg-primary rounded-pill">{{ all_mailings_count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Активных рассылок:
+                                    <span class="badge bg-success rounded-pill">{{ active_mailings_count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Уникальных получателей:
+                                    <span class="badge bg-info rounded-pill">{{ unique_recipients_count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Всего отправленных сообщений:
+                                    <span class="badge bg-secondary rounded-pill">{{ total_attempts_count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Успешных попыток отправки:
+                                    <span class="badge bg-success rounded-pill">{{ successful_attempts_count }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Неуспешных попыток отправки:
+                                    <span class="badge bg-danger rounded-pill">{{ failed_attempts_count }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <h5 class="text-center mt-3">VectorMail - <span class="beautiful-underline">это удобный сервис для управления вашими рассылками. Здесь вы можете создавать и хранить сообщения, управлять списками получателей, настраивать и запускать рассылки, а также отслеживать их статус и историю отправки.</span>
+            </h5>
+            <div class="row mt-5 justify-content-center">
+                <div class="col-md-8">
+                    <div class="alert alert-info text-center" role="alert">
+                        <p class="mb-0">Для доступа к полной статистике и функциям сервиса, пожалуйста, <a
+                                href="{% url 'users:login' %}" class="alert-link">войдите</a> или <a
+                                href="{% url 'users:register' %}" class="alert-link">зарегистрируйтесь</a>.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
