@@ -25,9 +25,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mailing_service',
+    'users',
 ]
 
 MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -35,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'VectorMail.urls'
@@ -50,7 +53,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'mailing_service.context_processors.mailing_counts',
             ],
+
         },
     },
 ]
@@ -83,6 +88,30 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Настройки кеширования
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",  # Используем базу данных Redis 1
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "COMPRESSOR": "django_redis.compressors.zlib.ZlibCompressor",
+            "SERIALIZER": "django_redis.serializers.pickle.PickleSerializer",
+            "PARSER_CLASS": "redis.connection.DefaultParser",
+        },
+        "KEY_PREFIX": "vectormail_cache",  # Префикс для ключей кеша
+        "TIMEOUT": 300,  # Время жизни кеша по умолчанию (5 минут)
+    }
+}
+
+# Настройки для кеширования страниц (если используется)
+# Время жизни кеша для страниц (в секундах)
+CACHE_MIDDLEWARE_SECONDS = 60
+# Префикс для ключей кеша страниц
+CACHE_MIDDLEWARE_KEY_PREFIX = 'page_cache'
+# Используемый кеш-бэкенд для кеширования страниц
+CACHE_MIDDLEWARE_ALIAS = 'default'
+
 LANGUAGE_CODE = "ru"
 
 TIME_ZONE = "Europe/Moscow"
@@ -101,7 +130,6 @@ MEDIA_URL = "media/"
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-
 # Email settings
 # Настройки Email для тестирования и отладки, если что можно закомимтить, когда настроишь в .env
 # для вывода писем в консоль вместо реальной отправки
@@ -113,7 +141,10 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS") == "True"  # Преобразуем �
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL") == "True"  # Преобразуем строку в булево значение
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = 'your_email@example.com' # Адрес отправителя по умолчанию
+DEFAULT_FROM_EMAIL = 'your_email@example.com'  # Адрес отправителя по умолчанию
 
+AUTH_USER_MODEL = 'users.User'
+
+LOGIN_URL = '/users/login/'
 
 # Static files (CSS, JavaScript, Images)

@@ -1,10 +1,15 @@
-
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic.base import RedirectView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('mailings/', include('mailing_service.urls')),
-path('', RedirectView.as_view(url='/mailings/send/', permanent=False)),
+    path('', include('mailing_service.urls')),  # Теперь URL-адреса из mailing_service будут доступны с корня
+    path('users/', include('users.urls')),
+    # Добавляем URL-адреса для сброса пароля из Django auth
+    # path('accounts/', include('django.contrib.auth.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
