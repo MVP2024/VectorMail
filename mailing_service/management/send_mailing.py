@@ -1,13 +1,14 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.core.mail import send_mail
 from django.conf import settings
-from mailing_service.models import Mailing
+from mailing_service.models import Mailing, MailingAttempt
+
 
 class Command(BaseCommand):
-    help = 'Sends a specific mailing by its ID.'
+    help = 'Отправляет конкретную рассылку по её ID.'
 
     def add_arguments(self, parser):
-        parser.add_argument('mailing_id', type=int, help='The ID of the mailing to send.')
+        parser.add_argument('mailing_id', type=int, help='ID рассылки для отправки.')
 
     def handle(self, *args, **options):
         mailing_id = options['mailing_id']
@@ -15,13 +16,14 @@ class Command(BaseCommand):
         try:
             mailing = Mailing.objects.get(pk=mailing_id)
         except Mailing.DoesNotExist:
-            raise CommandError(f'Mailing with ID "{mailing_id}" does not exist.')
+            raise CommandError(f'Рассылка с ID "{mailing_id}" не существует.')
 
         if not mailing.recipients.exists():
-            self.stdout.write(self.style.WARNING(f'Mailing ID {mailing_id} has no recipients. No emails sent.'))
+            self.stdout.write(self.style.WARNING(f'Рассылка с ID {mailing_id} не имеет получателей. Письма не отправлены.'))
             return
 
-        self.stdout.write(self.style.SUCCESS(f'Attempting to send mailing ID {mailing_id} ("{mailing.message.subject}") to {mailing.recipients.count()} recipients...'))
+        self.stdout.write(self.style.SUCCESS(
+            f'Попытка отправить рассылку с ID {mailing_id} ("{mailing.message.subject}") {mailing.recipients.count()} получателям...'))
 
         sent_count = 0
         failed_count = 0
@@ -36,16 +38,34 @@ class Command(BaseCommand):
                     recipient_list=[recipient.email],
                     fail_silently=False,
                 )
-                self.stdout.write(self.style.SUCCESS(f'Successfully sent to {recipient.email}'))
+                # Создаем запись об успешной попытке рассылки
+                MailingAttempt.objects.create(
+                    mailing=mailing,
+                    recipient=recipient,
+                    status=MailingAttempt.STATUS_SUCCESS,
+                    error_message=""
+                )
+                self.stdout.write(self.style.SUCCESS(f'Успешно отправлено на {recipient.email}'))
                 sent_count += 1
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f'Failed to send to {recipient.email}: {e}'))
+                # Создаем запись о неуспешной попытке рассылки
+                error_detail = str(e)
+                MailingAttempt.objects.create(
+                    mailing=mailing,
+                    recipient=recipient,
+                    status=MailingAttempt.STATUS_FAILED, # Используем STATUS_FAILED
+                    error_message=error_detail
+                )
+                self.stdout.write(self.style.ERROR(f'Не удалось отправить на {recipient.email}: {e}'))
                 failed_count += 1
 
-        self.stdout.write(self.style.SUCCESS(f'Mailing ID {mailing_id} sending complete. Sent: {sent_count}, Failed: {failed_count}.'))
+        self.stdout.write(self.style.SUCCESS(
+            f'Отправка рассылки с ID {mailing_id} завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.'))
 
-        # Update mailing status to 'Запущена' if it was 'Создана'
-        if mailing.status == Mailing.STATUS_CREATED:
-            mailing.status = Mailing.STATUS_RUNNING
+        # Update mailing status to 'Завершена' if it was 'Создана' or 'Запущена'
+        # Логика обновления статуса рассылки после ручной отправки
+        if mailing.status != Mailing.STATUS_COMPLETED: # Проверяем, что рассылка еще не завершена
+            mailing.status = Mailing.STATUS_COMPLETED # Устанавливаем статус "Завершена"
             mailing.save()
-            self.stdout.write(self.style.SUCCESS(f'Mailing ID {mailing_id} status updated to "{Mailing.STATUS_RUNNING}".'))
+            self.stdout.write(
+                self.style.SUCCESS(f'Статус рассылки с ID {mailing_id} обновлен на "{Mailing.STATUS_COMPLETED}".'))
