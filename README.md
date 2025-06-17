@@ -23,6 +23,7 @@ VectorMail — это Django-приложение для управления э
 - 🐘 PostgreSQL
 - 🏗️ Django 5.2
 - 📧 Email-бэкенды (console/SMTP)
+- 💾 Redis (для кеширования)
 
 ---
 
@@ -35,8 +36,8 @@ VectorMail — это Django-приложение для управления э
    ```
 
 2. **База данных**
-   - Установите PostgreSQL
-   - Создайте базу данных и пользователя согласно .env
+    - Установите PostgreSQL
+    - Создайте базу данных и пользователя согласно настройкам в файле `.env` (см. шаг 5).
 
 3. **Виртуальное окружение**
 
@@ -51,42 +52,81 @@ VectorMail — это Django-приложение для управления э
         pip install -r requirements.txt
     ```
 
-5. **Переменные окружения**
+5.  **Переменные окружения**
 
-    ```
-       copy .env.example .env  # Windows
-       # cp .env.example .env # Linux/macOS
-    ```
+    -   Переименуй .env.example в .env
+
+    -   Отредактируйте файл `.env`, заполнив необходимые переменные, такие как `SECRET_KEY`, `DEBUG`, `DATABASE_NAME`,
+        `DATABASE_USER`, `DATABASE_PASSWORD`, `DATABASE_HOST`, `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`,
+        `EMAIL_HOST_PASSWORD`.
+        По умолчанию `EMAIL_BACKEND` настроен для тестирования (отправка писем в консоль). Для реальной отправки писем
+        раскомментируйте соответствующие строки и заполните данные вашего SMTP-сервера.
 
 6. **Миграции**
 
+    Перед выполнением миграций, если у вас уже были созданы миграции или база данных, рекомендуется:
+    -   Удалить все файлы в папке `users/migrations/` (кроме `__init__.py` и `__pycache__`).
+    -   Удалить файл базы данных `dump.rdb` в корне проекта (если вы используете SQLite).
+
+    Затем выполните следующие команды в указанном порядке:
     ```
-       python manage.py migrate
-   
+    python manage.py makemigrations users
+    python manage.py migrate users
+    python manage.py migrate
     ```
 
-7**Суперпользователь**
+7. **Установка и запуск Redis**
+    Redis требуется для работы кеширования (настроен в `settings.py` через `CACHES`).
+    ### Установка
+    **Windows**:
+    1.  Скачайте Redis с [официального репозитория](https://github.com/microsoftarchive/redis/releases)
+    2.  Установите через установщик или запустите `redis-server.exe` напрямую
+
+    **Linux**:
+    ```
+    sudo apt update
+    sudo apt install redis
+    ```
+    ### Запуск
+    **Windows:**
+    ```
+    redis-server.exe
+    ```
+    **Linux:**
+    ```
+    sudo service redis start
+    # Или
+    redis-server
+    ```
+    ### Проверка
+    ```
+    redis-cli ping
+    # Ожидаемый ответ: PONG
+    ```
+    Убедитесь, что сервер Redis запущен перед запуском приложения.
+
+8. **Суперпользователь**
+    ```
+    python manage.py createsuperuser
+    ```
+
+9.  **Тестовые данные**
 
     ```
-        python manage.py createsuperuser
+    python -Xutf8 manage.py load_initial_data
     ```
+    (Флаг `-Xutf8` может потребоваться для Windows, если возникают проблемы с кодировкой.)
 
-8***Тестовые данные***
-
-    ```
-        python -Xutf8 manage.py load_initial_data
-    ```
-
-9**Запуск**
+10. **Запуск**
 
     ```
-        python manage.py runserver
+    python manage.py runserver
     ```
 
 ## 🧪 Команды управления
 
 - Отправка рассылки по ID:
-    
+
     ``` 
         python manage.py send_mailing <mailing_id>
         
@@ -97,71 +137,33 @@ VectorMail — это Django-приложение для управления э
         python manage.py load_initial_data
     ```
 
-## 🛠️ Установка Redis
-
-### Установка
-**Windows**:
-1. Скачайте Redis с [официального репозитория](https://github.com/microsoftarchive/redis/releases)
-2. Установите через установщик или запустите `redis-server.exe` напрямую
-
-**Linux**:
-    ```
-        sudo apt update
-        sudo apt install redis
-    ```
-
-### Запуск
-
-**Windows:**
-    ```
-        redis-server.exe
-    ```
-
-**LINUX**
-
-    ```
-        sudo service redis start
-        # Или
-        redis-server
-    ```
-
-**Проверка**
-
-    ```
-       redis-cli ping
-        # Ожидаемый ответ: PONG 
-    ```
-
-**Для мониторирования**
-
-    ```
-        redis-cli MONITOR
-    ```
-
-## ⚠️ Redis требуется для работы кеширования (настроен в settings.py через CACHES). 
-## Убедитесь, что сервер запущен перед использованием приложения.
-
 ## ⚠️ Важно
 
-- Для Windows используйте -Xutf8 при загрузке данных
-- Убедитесь, что Redis запущен: redis-server
-- Настройте EMAIL_BACKEND в .env для реальной отправки писем
-- MEDIA_ROOT (media/) должен быть доступен для записи
+-   Для Windows используйте `-Xutf8` при загрузке данных.
+-   Настройте `EMAIL_BACKEND` и другие параметры `EMAIL_*` в `.env` для реальной отправки писем и функций активации/сброса пароля.
+-   `MEDIA_ROOT` (`media/`) должен быть доступен для записи (для аватаров).
+-   Данные фикстур находятся в `mailing_service/fixtures/initial_data.json`.
+
+---
 
 ## 🧑‍💼 Управление пользователями
-- Расширенная модель пользователя с полями: отчество, дата рождения, телефон, аватар
-- Ручная активация аккаунтов администратором
-- Система восстановления пароля (сброс по email)
-- Админ-панель с управлением статусом пользователей (актив/заблокирован)
-- Валидация аватаров (форматы JPEG/PNG/GIF, ограничение 5МБ)
+-   Расширенная модель пользователя с полями: отчество, дата рождения, телефон, аватар
+-   Ручная активация аккаунтов администратором
+-   Система восстановления пароля (сброс по email)
+-   Админ-панель с управлением статусом пользователей (актив/заблокирован)
+-   Валидация аватаров (форматы JPEG/PNG/GIF, ограничение 5МБ)
+
+---
 
 ## 🔄 Дополнительные возможности
-- Кеширование на Redis (время жизни 5 минут, сжатие zlib)
-- Локализация на русский язык (LANGUAGE_CODE = "ru")
-- Автоматическое обновление кеша (UpdateCacheMiddleware)
-- Система уведомлений через messages framework
+-   Кеширование на Redis (время жизни 5 минут, сжатие zlib)
+-   Локализация на русский язык (`LANGUAGE_CODE = "ru"`)
+-   Автоматическое обновление кеша (`UpdateCacheMiddleware`)
+-   Система уведомлений через `messages framework`
 
+---
 ## 🛠️ Установка (дополнительно)
+
 - **Миграции для users**: `python manage.py migrate users`
 - **Email-конфигурация**: Настройте SMTP-параметры в `.env` для активации аккаунтов
 - **Redis**: Убедитесь, что Redis-сервер запущен на `redis://127.0.0.1:6379/1`
@@ -203,4 +205,4 @@ VectorMail/
 
 ## 📦 Лицензия
 
- MIT License — см. README.md
+MIT License — см. README.md
