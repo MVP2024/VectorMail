@@ -7,6 +7,7 @@ from .views import (
     send_single_mailing, feature_list_view
 )
 from .models import Mailing
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('', home_view, name='home'),
@@ -38,4 +39,5 @@ urlpatterns = [
     path('send_mailing/', send_mailing_view, name='send_mailing'),
     path('contacts/', contacts_view, name='contacts'),
     path('features/', feature_list_view, name='feature_list'),
+    path('permission_denied/', TemplateView.as_view(template_name='permission_denied.html'), name='permission_denied'),
 ]

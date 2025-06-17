@@ -28,8 +28,155 @@ class CustomLoginRequiredMixin(AccessMixin):
             return redirect('home')
         return super().dispatch(request, *args, **kwargs)
 
+
+class OwnerRequiredMixin(AccessMixin):
+    """
+    Миксин, который проверяет, является ли текущий пользователь владельцем объекта.
+    Если нет, перенаправляет на страницу permission_denied.html с сообщением об ошибке.
+    Предполагает, что view имеет метод get_object() для получения объекта.
+    Эта проверка применяется ко всем авторизованным пользователям, кроме персонала.
+    Персонал (is_staff) имеет полный доступ.
+    """
+    permission_denied_message = "У Вас недостаточно прав для выполнения этого действия."
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.object = None
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            # Если пользователь не авторизован, перенаправляем на страницу входа
+            return self.handle_no_permission()
+
+        # Если пользователь является персоналом, он имеет полный доступ
+        if request.user.is_staff:
+            return super().dispatch(request, *args, **kwargs)
+
+        self.object = None
+        if 'pk' in kwargs:
+            try:
+                # Пытаемся получить объект по PK.
+                # Если объект не существует, то это вызовет ошибку 404.
+                # Если объект существует, но владелец не совпадает, мы перехватим его.
+                self.object = super().get_object()
+            except self.model.DoesNotExist:
+                # Если объект не существует, позволяем вызвать 404.
+                # Это не ошибка прав, а ошибка "не найдено".
+                raise
+            except Exception as e:
+                messages.error(request, f"Произошла ошибка при получении объекта: {e}")
+                return redirect(self.get_redirect_url())
+
+            # Проверяем владение объектом для обычных пользователей
+            if self.object and self.object.owner != request.user:
+                messages.error(request, self.permission_denied_message)
+                return redirect(self.get_redirect_url())
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_redirect_url(self):
+        return reverse_lazy('permission_denied')
+
+
+# ... (остальной код без изменений до toggle_mailing_status) ...
+
+@login_required
+@require_POST
+def toggle_mailing_status(request, pk):
+    """
+    Переключает статус рассылки между 'created' и 'running'.
+    Менеджеры могут отключать любые рассылки. Пользователи - только свои.
+    """
+    mailing = get_object_or_404(Mailing, pk=pk)
+
+    # Менеджеры (is_staff) могут управлять любыми рассылками,
+    # обычные пользователи - только своими.
+    if not request.user.is_staff and mailing.owner != request.user:
+        messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
+        return redirect('mailings')
+
+    if mailing.status == Mailing.STATUS_CREATED:
+        mailing.status = Mailing.STATUS_RUNNING
+        messages.success(request, f"Рассылка '{mailing.message.subject}' успешно запущена.")
+    elif mailing.status == Mailing.STATUS_RUNNING:
+        mailing.status = Mailing.STATUS_CREATED
+        messages.info(request, f"Рассылка '{mailing.message.subject}' успешно остановлена.")
+    # Если статус 'completed', ничего не делаем
+
+    mailing.save()
+    return redirect('mailings')
+
+
+@login_required
+@require_POST
+def send_single_mailing(request, pk):
+    """
+    Отправляет письма для одной конкретной рассылки.
+    Менеджеры могут отправлять любые рассылки. Пользователи - только свои.
+    """
+    mailing = get_object_or_404(Mailing, pk=pk)
+
+    # Менеджеры (is_staff) могут отправлять любые рассылки,
+    # обычные пользователи - только свои.
+    if not request.user.is_staff and mailing.owner != request.user:
+        messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
+        return redirect('mailings')
+
+    if not mailing.recipients.exists():
+        messages.warning(request,
+                         f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) не имеет получателей. Письма не отправлены.')
+        return redirect('mailings')
+
+    sent_count = 0
+    failed_count = 0
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'webmaster@localhost')
+
+    for recipient in mailing.recipients.all():
+        try:
+            send_mail(
+                subject=mailing.message.subject,
+                message=mailing.message.body,
+                from_email=from_email,
+                recipient_list=[recipient.email],
+                fail_silently=False,
+            )
+            MailingAttempt.objects.create(
+                mailing=mailing,
+                recipient=recipient,
+                status=MailingAttempt.STATUS_SUCCESS,
+                error_message=""
+            )
+            sent_count += 1
+        except Exception as e:
+            error_detail = str(e)
+            MailingAttempt.objects.create(
+                mailing=mailing,
+                recipient=recipient,
+                status=MailingAttempt.STATUS_FAILED,
+                error_message=error_detail
+            )
+            failed_count += 1
+            user_friendly_message = f"Не удалось отправить письмо на {recipient.email}. "
+            if "getaddrinfo failed" in error_detail:
+                user_friendly_message += "Проверьте настройки почтового сервера (EMAIL_HOST, EMAIL_PORT) или сетевое подключение."
+            else:
+                user_friendly_message += f"Причина: {error_detail}"
+            messages.error(request, user_friendly_message)
+
+    messages.success(request,
+                     f'Отправка рассылки "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
+
+    # Обновляем статус рассылки на "Завершена" после отправки
+    if mailing.status != Mailing.STATUS_COMPLETED:
+        mailing.status = Mailing.STATUS_COMPLETED
+        mailing.save()
+        messages.info(request, f'Статус рассылки "{mailing.message.subject}" обновлен на "Завершена".')
+
+    return redirect('mailings')
+
+
 @cache_page(60 * 1)  # Кешировать страницу на 1 минуту (60 секунд)
-@vary_on_cookie      # Кешировать отдельно для каждого пользователя (по кукам сессии)
+@vary_on_cookie  # Кешировать отдельно для каждого пользователя (по кукам сессии)
 def home_view(request):
     return render(request, 'index.html')
 
@@ -62,31 +209,22 @@ class RecipientListView(CustomLoginRequiredMixin, ListView):
         return recipients_queryset
 
 
-class RecipientFormView(CustomLoginRequiredMixin, CreateView, UpdateView):
+class RecipientFormView(OwnerRequiredMixin, CustomLoginRequiredMixin, CreateView, UpdateView):
     model = Recipient
     form_class = RecipientForm
     template_name = 'add_new_recipient.html'
     success_url = reverse_lazy('clients')
 
     def form_valid(self, form):
-        # Автоматически присваиваем текущего пользователя как владельца
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
     def get_object(self, queryset=None):
-        # Пользователь может редактировать только своих получателей.
-        # Менеджер не может редактировать чужие данные через эту форму.
+        # Получаем объект по PK без фильтрации по владельцу.
+        # Проверка владельца будет выполнена в OwnerRequiredMixin.
         pk = self.kwargs.get(self.pk_url_kwarg)
         if pk:
-            # Если пользователь - менеджер, он может просматривать чужие данные,
-            # но для редактирования/удаления ему доступны только его собственные.
-            # Поэтому здесь фильтруем по owner=self.request.user
-            if self.request.user.is_staff:
-                # Менеджер может просматривать, но не редактировать чужие данные через эту форму.
-                # Чтобы менеджер мог редактировать только свои, оставляем фильтр.
-                # Если бы менеджер мог редактировать чужие, фильтр бы убрали.
-                return get_object_or_404(self.model, pk=pk, owner=self.request.user)
-            return get_object_or_404(self.model, pk=pk, owner=self.request.user)
+            return get_object_or_404(self.model, pk=pk)
         return None
 
     def get_context_data(self, **kwargs):
@@ -95,15 +233,16 @@ class RecipientFormView(CustomLoginRequiredMixin, CreateView, UpdateView):
         return context
 
 
-class RecipientDeleteView(CustomLoginRequiredMixin, DeleteView):
+class RecipientDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView):
     model = Recipient
     template_name = 'recipient_confirm_delete.html'
     success_url = reverse_lazy('clients')
 
-    def get_queryset(self):
-        # Пользователь может удалять только своих получателей.
-        # Менеджер не может удалять чужие данные.
-        return super().get_queryset().filter(owner=self.request.user)
+    def get_object(self, queryset=None):
+        # Получаем объект по PK без фильтрации по владельцу.
+        # Проверка владельца будет выполнена в OwnerRequiredMixin.
+        pk = self.kwargs.get(self.pk_url_kwarg)
+        return get_object_or_404(self.model, pk=pk)
 
 
 class MessageListView(CustomLoginRequiredMixin, ListView):
@@ -134,19 +273,19 @@ class MessageListView(CustomLoginRequiredMixin, ListView):
         return messages_queryset
 
 
-class MessageDetailView(CustomLoginRequiredMixin, DetailView):
+class MessageDetailView(OwnerRequiredMixin, CustomLoginRequiredMixin, DetailView):
     model = Message
     template_name = 'message_detail.html'
     context_object_name = 'message'
 
-    def get_queryset(self):
-        # Менеджеры видят все сообщения, обычные пользователи - только свои
-        if self.request.user.is_staff:
-            return super().get_queryset()
-        return super().get_queryset().filter(owner=self.request.user)
+    def get_object(self, queryset=None):
+        # Проверка прав владения теперь полностью обрабатывается OwnerRequiredMixin.
+        # Этот метод просто извлекает объект.
+        pk = self.kwargs.get(self.pk_url_kwarg)
+        return get_object_or_404(self.model, pk=pk)
 
 
-class MessageCreateUpdateView(CustomLoginRequiredMixin, CreateView, UpdateView):
+class MessageCreateUpdateView(OwnerRequiredMixin, CustomLoginRequiredMixin, CreateView, UpdateView):
     model = Message
     form_class = MessageForm
     template_name = 'add_new_messages.html'
@@ -158,13 +297,11 @@ class MessageCreateUpdateView(CustomLoginRequiredMixin, CreateView, UpdateView):
         return super().form_valid(form)
 
     def get_object(self, queryset=None):
-        # Пользователь может редактировать только свои сообщения.
-        # Менеджер не может редактировать чужие данные через эту форму.
+        # Получаем объект по PK без фильтрации по владельцу.
+        # Проверка владельца будет выполнена в OwnerRequiredMixin.
         pk = self.kwargs.get(self.pk_url_kwarg)
         if pk:
-            if self.request.user.is_staff:
-                return get_object_or_404(self.model, pk=pk, owner=self.request.user)
-            return get_object_or_404(self.model, pk=pk, owner=self.request.user)
+            return get_object_or_404(self.model, pk=pk)
         return None
 
     def get_context_data(self, **kwargs):
@@ -173,15 +310,16 @@ class MessageCreateUpdateView(CustomLoginRequiredMixin, CreateView, UpdateView):
         return context
 
 
-class MessageDeleteView(CustomLoginRequiredMixin, DeleteView):
+class MessageDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView):
     model = Message
     template_name = 'message_confirm_delete.html'
     success_url = reverse_lazy('messages')
 
-    def get_queryset(self):
-        # Пользователь может удалять только свои сообщения.
-        # Менеджер не может удалять чужие данные.
-        return super().get_queryset().filter(owner=self.request.user)
+    def get_object(self, queryset=None):
+        # Получаем объект по PK без фильтрации по владельцу.
+        # Проверка владельца будет выполнена в OwnerRequiredMixin.
+        pk = self.kwargs.get(self.pk_url_kwarg)
+        return get_object_or_404(self.model, pk=pk)
 
 
 class MailingListView(CustomLoginRequiredMixin, ListView):
@@ -212,7 +350,7 @@ class MailingListView(CustomLoginRequiredMixin, ListView):
         return mailings_queryset
 
 
-class MailingCreateUpdateView(CustomLoginRequiredMixin, CreateView, UpdateView):
+class MailingCreateUpdateView(OwnerRequiredMixin, CustomLoginRequiredMixin, CreateView, UpdateView):
     model = Mailing
     form_class = MailingForm
     template_name = 'creating_mailing.html'
@@ -230,13 +368,11 @@ class MailingCreateUpdateView(CustomLoginRequiredMixin, CreateView, UpdateView):
         return super().form_valid(form)
 
     def get_object(self, queryset=None):
-        # Пользователь может редактировать только свои рассылки.
-        # Менеджер не может редактировать чужие данные через эту форму.
+        # Получаем объект по PK без фильтрации по владельцу.
+        # Проверка владельца будет выполнена в OwnerRequiredMixin.
         pk = self.kwargs.get(self.pk_url_kwarg)
         if pk:
-            if self.request.user.is_staff:
-                return get_object_or_404(self.model, pk=pk, owner=self.request.user)
-            return get_object_or_404(self.model, pk=pk, owner=self.request.user)
+            return get_object_or_404(self.model, pk=pk)
         return None
 
     def get_context_data(self, **kwargs):
@@ -245,15 +381,16 @@ class MailingCreateUpdateView(CustomLoginRequiredMixin, CreateView, UpdateView):
         return context
 
 
-class MailingDeleteView(CustomLoginRequiredMixin, DeleteView):
+class MailingDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView):
     model = Mailing
     template_name = 'mailing_confirm_delete.html'
     success_url = reverse_lazy('mailings')
 
-    def get_queryset(self):
-        # Пользователь может удалять только свои рассылки.
-        # Менеджер не может удалять чужие данные.
-        return super().get_queryset().filter(owner=self.request.user)
+    def get_object(self, queryset=None):
+        # Получаем объект по PK без фильтрации по владельцу.
+        # Проверка владельца будет выполнена в OwnerRequiredMixin.
+        pk = self.kwargs.get(self.pk_url_kwarg)
+        return get_object_or_404(self.model, pk=pk)
 
 
 class FilteredMailingListView(CustomLoginRequiredMixin, ListView):
@@ -313,10 +450,13 @@ def toggle_mailing_status(request, pk):
     Переключает статус рассылки между 'created' и 'running'.
     Менеджеры могут отключать любые рассылки. Пользователи - только свои.
     """
-    if request.user.is_staff:
-        mailing = get_object_or_404(Mailing, pk=pk)
-    else:
-        mailing = get_object_or_404(Mailing, pk=pk, owner=request.user)
+    mailing = get_object_or_404(Mailing, pk=pk)
+
+    # Менеджеры (is_staff) могут управлять любыми рассылками,
+    # обычные пользователи - только своими.
+    if not request.user.is_staff and mailing.owner != request.user:
+        messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
+        return redirect('mailings')
 
     if mailing.status == Mailing.STATUS_CREATED:
         mailing.status = Mailing.STATUS_RUNNING
@@ -337,10 +477,13 @@ def send_single_mailing(request, pk):
     Отправляет письма для одной конкретной рассылки.
     Менеджеры могут отправлять любые рассылки. Пользователи - только свои.
     """
-    if request.user.is_staff:
-        mailing = get_object_or_404(Mailing, pk=pk)
-    else:
-        mailing = get_object_or_404(Mailing, pk=pk, owner=request.user)
+    mailing = get_object_or_404(Mailing, pk=pk)
+
+    # Менеджеры (is_staff) могут отправлять любые рассылки,
+    # обычные пользователи - только свои.
+    if not request.user.is_staff and mailing.owner != request.user:
+        messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
+        return redirect('mailings')
 
     if not mailing.recipients.exists():
         messages.warning(request,
@@ -458,7 +601,7 @@ def send_mailing_view(request):
                     messages.error(request, user_friendly_message)
 
             messages.success(request,
-                             f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
+                             f'Отправка рассылки "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
             return redirect('send_mailing')
     else:
         # Передаем текущего пользователя в форму для фильтрации рассылок
