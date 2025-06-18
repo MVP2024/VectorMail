@@ -4,31 +4,34 @@
 {% block title %}Сообщение: {{ message.subject }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Тема сообщения: {{ message.subject }}</h4>
-                </div>
-                <div class="card-body">
-                    <p class="card-text"><strong>Сообщение:</strong></p>
-                    <div class="message-body mb-3">
-                        {{ message.body|linebreaksbr }}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0">Тема сообщения: {{ message.subject }}</h4>
                     </div>
-                    <p class="card-text"><small class="text-muted">Дата создания: {{ message.created_at|date:"d.m.Y H:i" }}</small></p>
-                </div>
-                <div class="card-footer bg-transparent border-top-0 d-flex justify-content-start gap-2">
-                    <a href="{% url 'edit_message' message.pk %}" class="btn btn-warning text-dark">Редактировать</a>
-                    <a href="{% url 'delete_message' message.pk %}" class="btn btn-danger">Удалить</a>
+                    <div class="card-body">
+                        <p class="card-text"><strong>Сообщение:</strong></p>
+                        <div class="message-body mb-3">
+                            {{ message.body|linebreaksbr }}
+                        </div>
+                        <p class="card-text"><small class="text-muted">Дата
+                            создания: {{ message.created_at|date:"d.m.Y H:i" }}</small></p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0 d-flex justify-content-start gap-2">
+                        {% if message.owner == request.user or request.user.is_staff %}
+                            <a href="{% url 'edit_message' message.pk %}" class="btn btn-warning text-dark">Редактировать</a>
+                            <a href="{% url 'delete_message' message.pk %}" class="btn btn-danger">Удалить</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row mt-4">
-        <div class="col text-end">
-            <a href="{% url 'messages' %}" class="btn btn-outline-secondary">Вернуться в мои сообщения</a>
+        <div class="row mt-4">
+            <div class="col text-end">
+                <a href="{% url 'messages' %}" class="btn btn-outline-secondary">Вернуться в мои сообщения</a>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}

@@ -19,11 +19,13 @@ class Command(BaseCommand):
             raise CommandError(f'Рассылка с ID "{mailing_id}" не существует.')
 
         if not mailing.recipients.exists():
-            self.stdout.write(self.style.WARNING(f'Рассылка с ID {mailing_id} не имеет получателей. Письма не отправлены.'))
+            self.stdout.write(
+                self.style.WARNING(f'Рассылка с ID {mailing_id} не имеет получателей. Письма не отправлены.'))
             return
 
         self.stdout.write(self.style.SUCCESS(
-            f'Попытка отправить рассылку с ID {mailing_id} ("{mailing.message.subject}") {mailing.recipients.count()} получателям...'))
+            f'Попытка отправить рассылку с ID {mailing_id} ("{mailing.message.subject}") '
+            f'{mailing.recipients.count()} получателям...'))
 
         sent_count = 0
         failed_count = 0
@@ -53,7 +55,7 @@ class Command(BaseCommand):
                 MailingAttempt.objects.create(
                     mailing=mailing,
                     recipient=recipient,
-                    status=MailingAttempt.STATUS_FAILED, # Используем STATUS_FAILED
+                    status=MailingAttempt.STATUS_FAILED,  # Используем STATUS_FAILED
                     error_message=error_detail
                 )
                 self.stdout.write(self.style.ERROR(f'Не удалось отправить на {recipient.email}: {e}'))
@@ -64,8 +66,8 @@ class Command(BaseCommand):
 
         # Update mailing status to 'Завершена' if it was 'Создана' or 'Запущена'
         # Логика обновления статуса рассылки после ручной отправки
-        if mailing.status != Mailing.STATUS_COMPLETED: # Проверяем, что рассылка еще не завершена
-            mailing.status = Mailing.STATUS_COMPLETED # Устанавливаем статус "Завершена"
+        if mailing.status != Mailing.STATUS_COMPLETED:  # Проверяем, что рассылка еще не завершена
+            mailing.status = Mailing.STATUS_COMPLETED  # Устанавливаем статус "Завершена"
             mailing.save()
             self.stdout.write(
                 self.style.SUCCESS(f'Статус рассылки с ID {mailing_id} обновлен на "{Mailing.STATUS_COMPLETED}".'))

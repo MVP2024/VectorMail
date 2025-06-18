@@ -35,10 +35,12 @@
                             </p>
                         </div>
                         <div class="card-footer bg-transparent border-top-0 d-flex justify-content-start gap-5 flex-wrap">
-                            <a href="{% url 'edit_recipient' recipient.pk %}"
-                               class="btn btn-warning text-dark">Редактировать</a>
-                            <a href="{% url 'delete_recipient' recipient.pk %}"
-                               class="btn btn-danger">Удалить</a>
+                            {% if recipient.owner == request.user or request.user.is_staff %}
+                                <a href="{% url 'edit_recipient' recipient.pk %}"
+                                   class="btn btn-warning text-dark">Редактировать</a>
+                                <a href="{% url 'delete_recipient' recipient.pk %}"
+                                   class="btn btn-danger">Удалить</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

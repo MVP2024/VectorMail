@@ -47,30 +47,32 @@
                             </p>
                         </div>
                         <div class="card-footer bg-transparent border-top-0 d-flex justify-content-start gap-2 flex-wrap">
-                            {# Добавлен класс flex-wrap #}
                             <a href="{% url 'message_detail' mailing.message.pk %}"
                                class="btn btn-success">Посмотреть</a>
-                            <a href="{% url 'edit_mailing' mailing.pk %}" class="btn btn-warning text-dark">Редактировать</a>
-                            {% if mailing.status == 'created' %}
-                                <form action="{% url 'toggle_mailing_status' mailing.pk %}" method="post"
-                                      style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-info">Запустить</button>
-                                </form>
-                            {% elif mailing.status == 'running' %}
-                                <form action="{% url 'toggle_mailing_status' mailing.pk %}" method="post"
-                                      style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-secondary">Остановить</button>
-                                </form>
-                            {% endif %}
-                            {# Новая кнопка "Отправить" #}
-                            {% if mailing.status != 'completed' %} {# Кнопка видна, если рассылка не завершена #}
-                                <form action="{% url 'send_single_mailing' mailing.pk %}" method="post"
-                                      style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-primary">Отправить</button>
-                                </form>
+                            {% if mailing.owner == request.user or request.user.is_staff %}
+                                <a href="{% url 'edit_mailing' mailing.pk %}" class="btn btn-warning text-dark">Редактировать</a>
+                                {% if mailing.status == 'created' %}
+                                    <form action="{% url 'toggle_mailing_status' mailing.pk %}" method="post"
+                                          style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-info">Запустить</button>
+                                    </form>
+                                {% elif mailing.status == 'running' %}
+                                    <form action="{% url 'toggle_mailing_status' mailing.pk %}" method="post"
+                                          style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-secondary">Остановить</button>
+                                    </form>
+                                {% endif %}
+                                {# Новая кнопка "Отправить" #}
+                                {% if mailing.status != 'completed' %} {# Кнопка видна, если рассылка не завершена #}
+                                    <form action="{% url 'send_single_mailing' mailing.pk %}" method="post"
+                                          style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary">Отправить</button>
+                                    </form>
+                                {% endif %}
+                                <a href="{% url 'delete_mailing' mailing.pk %}" class="btn btn-danger">Удалить</a>
                             {% endif %}
                         </div>
                     </div>

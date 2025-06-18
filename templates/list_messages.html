@@ -24,6 +24,10 @@
                         </div>
                         <div class="card-footer bg-transparent border-top-0">
                             <a href="{% url 'message_detail' message.pk %}" class="btn btn-success">Посмотреть</a>
+                            {% if message.owner == request.user or request.user.is_staff %}
+                                <a href="{% url 'edit_message' message.pk %}" class="btn btn-warning text-dark">Редактировать</a>
+                                <a href="{% url 'delete_message' message.pk %}" class="btn btn-danger">Удалить</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

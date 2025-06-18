@@ -103,6 +103,8 @@ class MessageForm(forms.ModelForm):
 
 
 class ContactForm(forms.Form):
-    name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ваше имя'}))
+    name = forms.CharField(max_length=100,
+                           widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ваше имя'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Ваш Email'}))
-    message = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Ваше сообщение'}))
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Ваше сообщение'}))

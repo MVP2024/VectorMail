@@ -1,6 +1,6 @@
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView, CreateView, ListView, View
-from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from .forms import UserProfileForm, UserRegisterForm, UserLoginForm
 from .models import User
@@ -10,7 +10,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login
 
@@ -20,6 +20,7 @@ class StaffRequiredMixin(AccessMixin):
     Миксин, который проверяет, является ли пользователь персоналом (is_staff=True).
     Если нет, перенаправляет на главную страницу с сообщением об ошибке.
     """
+
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return self.handle_no_permission()
@@ -33,7 +34,7 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserProfileForm
     template_name = 'users/profile_edit.html'
-    success_url = reverse_lazy('users:profile')
+    success_url = reverse_lazy('home')
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -45,7 +46,7 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
 class RegisterUserView(CreateView):
     form_class = UserRegisterForm
     template_name = 'users/register.html'
-    success_url = reverse_lazy('users:login') # Это будет переопределено методом form_valid
+    success_url = reverse_lazy('users:login')  # Это будет переопределено методом form_valid
 
     def form_valid(self, form):
         user = form.save(commit=False)
@@ -62,18 +63,21 @@ class RegisterUserView(CreateView):
         })
         send_mail(mail_subject, message, None, [user.email])  # from_email задан в settings.py
         messages.success(self.request,
-                         'Пожалуйста, подтвердите ваш email для завершения регистрации. Мы отправили вам письмо с инструкциями.')
+                         'Пожалуйста, подтвердите ваш email для завершения регистрации. '
+                         'Мы отправили вам письмо с инструкциями.')
         return redirect('users:account_activation_sent')
+
 
 class LoginUserView(LoginView):
     form_class = UserLoginForm
     template_name = 'users/login.html'
 
     def get_success_url(self):
-        return reverse_lazy('home') # Перенаправляем на главную после успешного входа
+        return reverse_lazy('home')  # Перенаправляем на главную после успешного входа
+
 
 class LogoutUserView(LogoutView):
-    next_page = reverse_lazy('users:login') # Перенаправляем на страницу входа после выхода
+    next_page = reverse_lazy('users:login')  # Перенаправляем на страницу входа после выхода
 
 
 # Функциональное представление для активации аккаунта
@@ -87,9 +91,9 @@ def activate(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request, user) # Вход в систему пользователя после активации
+        login(request, user)  # Вход в систему пользователя после активации
         messages.success(request, 'Ваш аккаунт успешно активирован! Вы вошли в систему.')
-        return redirect('home') # Перенаправляем на домашнюю страницу или страницу профиля
+        return redirect('home')  # Перенаправляем на домашнюю страницу или страницу профиля
     else:
         messages.error(request, 'Ссылка активации недействительна или срок ее действия истек.')
         return redirect('users:account_activation_invalid')

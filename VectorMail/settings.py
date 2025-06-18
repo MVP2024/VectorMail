@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -45,8 +44,7 @@ ROOT_URLCONF = 'VectorMail.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -24,7 +24,9 @@ class CustomLoginRequiredMixin(AccessMixin):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             messages.error(request,
-                           "Для просмотра и управления сообщениями, рассылками и получателями необходимо войти в систему или зарегистрироваться. Пожалуйста, <a href='/users/login/'>войдите</a> или <a href='/users/register/'>зарегистрируйтесь</a>.")
+                           "Для просмотра и управления сообщениями, рассылками и получателями необходимо "
+                           "войти в систему или зарегистрироваться. Пожалуйста, <a href='/users/login/'>войдите</a> "
+                           "или <a href='/users/register/'>зарегистрируйтесь</a>.")
             return redirect('home')
         return super().dispatch(request, *args, **kwargs)
 
@@ -76,103 +78,6 @@ class OwnerRequiredMixin(AccessMixin):
 
     def get_redirect_url(self):
         return reverse_lazy('permission_denied')
-
-
-# ... (остальной код без изменений до toggle_mailing_status) ...
-
-@login_required
-@require_POST
-def toggle_mailing_status(request, pk):
-    """
-    Переключает статус рассылки между 'created' и 'running'.
-    Менеджеры могут отключать любые рассылки. Пользователи - только свои.
-    """
-    mailing = get_object_or_404(Mailing, pk=pk)
-
-    # Менеджеры (is_staff) могут управлять любыми рассылками,
-    # обычные пользователи - только своими.
-    if not request.user.is_staff and mailing.owner != request.user:
-        messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
-        return redirect('mailings')
-
-    if mailing.status == Mailing.STATUS_CREATED:
-        mailing.status = Mailing.STATUS_RUNNING
-        messages.success(request, f"Рассылка '{mailing.message.subject}' успешно запущена.")
-    elif mailing.status == Mailing.STATUS_RUNNING:
-        mailing.status = Mailing.STATUS_CREATED
-        messages.info(request, f"Рассылка '{mailing.message.subject}' успешно остановлена.")
-    # Если статус 'completed', ничего не делаем
-
-    mailing.save()
-    return redirect('mailings')
-
-
-@login_required
-@require_POST
-def send_single_mailing(request, pk):
-    """
-    Отправляет письма для одной конкретной рассылки.
-    Менеджеры могут отправлять любые рассылки. Пользователи - только свои.
-    """
-    mailing = get_object_or_404(Mailing, pk=pk)
-
-    # Менеджеры (is_staff) могут отправлять любые рассылки,
-    # обычные пользователи - только свои.
-    if not request.user.is_staff and mailing.owner != request.user:
-        messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
-        return redirect('mailings')
-
-    if not mailing.recipients.exists():
-        messages.warning(request,
-                         f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) не имеет получателей. Письма не отправлены.')
-        return redirect('mailings')
-
-    sent_count = 0
-    failed_count = 0
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'webmaster@localhost')
-
-    for recipient in mailing.recipients.all():
-        try:
-            send_mail(
-                subject=mailing.message.subject,
-                message=mailing.message.body,
-                from_email=from_email,
-                recipient_list=[recipient.email],
-                fail_silently=False,
-            )
-            MailingAttempt.objects.create(
-                mailing=mailing,
-                recipient=recipient,
-                status=MailingAttempt.STATUS_SUCCESS,
-                error_message=""
-            )
-            sent_count += 1
-        except Exception as e:
-            error_detail = str(e)
-            MailingAttempt.objects.create(
-                mailing=mailing,
-                recipient=recipient,
-                status=MailingAttempt.STATUS_FAILED,
-                error_message=error_detail
-            )
-            failed_count += 1
-            user_friendly_message = f"Не удалось отправить письмо на {recipient.email}. "
-            if "getaddrinfo failed" in error_detail:
-                user_friendly_message += "Проверьте настройки почтового сервера (EMAIL_HOST, EMAIL_PORT) или сетевое подключение."
-            else:
-                user_friendly_message += f"Причина: {error_detail}"
-            messages.error(request, user_friendly_message)
-
-    messages.success(request,
-                     f'Отправка рассылки "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
-
-    # Обновляем статус рассылки на "Завершена" после отправки
-    if mailing.status != Mailing.STATUS_COMPLETED:
-        mailing.status = Mailing.STATUS_COMPLETED
-        mailing.save()
-        messages.info(request, f'Статус рассылки "{mailing.message.subject}" обновлен на "Завершена".')
-
-    return redirect('mailings')
 
 
 @cache_page(60 * 1)  # Кешировать страницу на 1 минуту (60 секунд)
@@ -487,7 +392,8 @@ def send_single_mailing(request, pk):
 
     if not mailing.recipients.exists():
         messages.warning(request,
-                         f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) не имеет получателей. Письма не отправлены.')
+                         f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) не имеет получателей. '
+                         f'Письма не отправлены.')
         return redirect('mailings')
 
     sent_count = 0
@@ -521,13 +427,15 @@ def send_single_mailing(request, pk):
             failed_count += 1
             user_friendly_message = f"Не удалось отправить письмо на {recipient.email}. "
             if "getaddrinfo failed" in error_detail:
-                user_friendly_message += "Проверьте настройки почтового сервера (EMAIL_HOST, EMAIL_PORT) или сетевое подключение."
+                user_friendly_message += ("Проверьте настройки почтового сервера (EMAIL_HOST, EMAIL_PORT) "
+                                          "или сетевое подключение.")
             else:
                 user_friendly_message += f"Причина: {error_detail}"
             messages.error(request, user_friendly_message)
 
     messages.success(request,
-                     f'Отправка рассылки "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
+                     f'Отправка рассылки "{mailing.message.subject}" (ID: {mailing.id}) завершена. '
+                     f'Отправлено: {sent_count}, Ошибок: {failed_count}.')
 
     # Обновляем статус рассылки на "Завершена" после отправки
     if mailing.status != Mailing.STATUS_COMPLETED:
@@ -541,7 +449,10 @@ def send_single_mailing(request, pk):
 def send_mailing_view(request):
     if not request.user.is_authenticated:
         messages.error(request,
-                       "Вы не можете просматривать и управлять сообщениями, рассылками, получателями, т.к. у вас нет прав. Можете <a href='/users/login/'>войти</a> или <a href='/users/register/'>зарегистрироваться</a> и переходить куда нужно.")
+                       "Вы не можете просматривать и управлять сообщениями, рассылками, получателями,"
+                       " т.к. у вас нет прав. "
+                       "Можете <a href='/users/login/'>войти</a> или <a href='/users/register/'>зарегистрироваться</a> "
+                       "и переходить куда нужно.")
         return redirect('home')
 
     if request.method == 'POST':
@@ -558,7 +469,8 @@ def send_mailing_view(request):
 
             if not mailing.recipients.exists():
                 messages.warning(request,
-                                 f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) не имеет получателей. Письма не отправлены.')
+                                 f'Рассылка "{mailing.message.subject}" (ID: {mailing.id}) '
+                                 f'не имеет получателей. Письма не отправлены.')
                 return redirect('send_mailing')
 
             sent_count = 0
@@ -595,13 +507,15 @@ def send_mailing_view(request):
                     user_friendly_message = f"Не удалось отправить письмо на {recipient.email}. "
 
                     if "getaddrinfo failed" in error_detail:
-                        user_friendly_message += "Проверьте настройки почтового сервера (EMAIL_HOST, EMAIL_PORT) или сетевое подключение."
+                        user_friendly_message += ("Проверьте настройки почтового сервера (EMAIL_HOST, EMAIL_PORT)"
+                                                  "или сетевое подключение.")
                     else:
                         user_friendly_message += f"Причина: {error_detail}"
                     messages.error(request, user_friendly_message)
 
             messages.success(request,
-                             f'Отправка рассылки "{mailing.message.subject}" (ID: {mailing.id}) завершена. Отправлено: {sent_count}, Ошибок: {failed_count}.')
+                             f'Отправка рассылки "{mailing.message.subject}" (ID: {mailing.id}) завершена.'
+                             f'Отправлено: {sent_count}, Ошибок: {failed_count}.')
             return redirect('send_mailing')
     else:
         # Передаем текущего пользователя в форму для фильтрации рассылок

@@ -27,6 +27,11 @@ class Recipient(models.Model):
         verbose_name = "Получатель"
         verbose_name_plural = "Получатели"
         ordering = ['last_name', 'first_name']
+        permissions = [
+            ("can_view_all_recipients", "Can view all recipients"),
+            ("can_edit_all_recipients", "Can edit all recipients"),
+            ("can_delete_all_recipients", "Can delete all recipients"),
+        ]
 
     @property
     def full_name(self):
@@ -48,6 +53,11 @@ class Message(models.Model):
         verbose_name = "Сообщение"
         verbose_name_plural = "Сообщения"
         ordering = ['-created_at']  # Сортировка по дате создания, новые сверху
+        permissions = [
+            ("can_view_all_messages", "Can view all messages"),
+            ("can_edit_all_messages", "Can edit all messages"),
+            ("can_delete_all_messages", "Can delete all messages"),
+        ]
 
     def __str__(self):
         return self.subject
@@ -83,6 +93,13 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
+        permissions = [
+            ("can_view_all_mailings", "Can view all mailings"),
+            ("can_edit_all_mailings", "Can edit all mailings"),
+            ("can_delete_all_mailings", "Can delete all mailings"),
+            ("can_toggle_any_mailing_status", "Can toggle status of any mailing"),
+            ("can_send_any_mailing", "Can send any mailing"),
+        ]
 
     def __str__(self):
         return f"Рассылка от {self.first_send_datetime.strftime('%Y-%m-%d %H:%M')}"
@@ -117,4 +134,5 @@ class MailingAttempt(models.Model):
         ordering = ['-sent_at']
 
     def __str__(self):
-        return f"Попытка для {self.mailing.message.subject} получателю {self.recipient.email} ({self.get_status_display()})"
+        return (f"Попытка для {self.mailing.message.subject} "
+                f"получателю {self.recipient.email} ({self.get_status_display()})")

@@ -93,17 +93,17 @@
     <div class="content-area">
         <main>
             {# Блок для вывода сообщений Django #}
-            {#            <div class="container mt-3">#}
-            {#                {% if messages %}#}
-            {#                    {% for message in messages %}#}
-            {#                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">#}
-            {#                            {{ message|safe }}#}
-            {#                            <button type="button" class="btn-close" data-bs-dismiss="alert"#}
-            {#                                    aria-label="Close"></button>#}
-            {#                        </div>#}
-            {#                    {% endfor %}#}
-            {#                {% endif %}#}
-            {#            </div>#}
+{#                        <div class="container mt-3">#}
+{#                            {% if messages %}#}
+{#                                {% for message in messages %}#}
+{#                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">#}
+{#                                        {{ message|safe }}#}
+{#                                        <button type="button" class="btn-close" data-bs-dismiss="alert"#}
+{#                                                aria-label="Close"></button>#}
+{#                                    </div>#}
+{#                                {% endfor %}#}
+{#                            {% endif %}#}
+{#                        </div>#}
             {# Здесь будет вставляться контент дочерних шаблонов #}
             {% block content %}
             {% endblock %}

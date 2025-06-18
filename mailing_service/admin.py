@@ -1,10 +1,6 @@
 from django.contrib import admin
 from .models import Message, Mailing, Recipient, MailingAttempt
 
-# @admin.register(Client)
-# class ClientAdmin(admin.ModelAdmin):
-#     list_display = ('email', 'fio')
-#     search_fields = ('email', 'fio')
 
 @admin.register(Recipient)
 class RecipientAdmin(admin.ModelAdmin):
@@ -19,11 +15,13 @@ class MessageAdmin(admin.ModelAdmin):
     search_fields = ('subject', 'body', 'owner__username')
     list_filter = ('owner',)
 
+
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
     list_display = ('first_send_datetime', 'end_send_datetime', 'status', 'message', 'owner')
     list_filter = ('status', 'owner')
-    raw_id_fields = ('message', 'recipients') # Типа для отношений «многие ко многим»
+    raw_id_fields = ('message', 'recipients')  # Типа для отношений «многие ко многим»
+
 
 @admin.register(MailingAttempt)
 class MailingAttemptAdmin(admin.ModelAdmin):

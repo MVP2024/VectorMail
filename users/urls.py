@@ -1,4 +1,4 @@
-from django.urls import path, include, reverse_lazy
+from django.urls import path, reverse_lazy
 from .views import UserProfileView, RegisterUserView, LoginUserView, LogoutUserView, activate, UserListView, \
     ToggleUserActiveStatusView
 from django.views.generic import TemplateView
