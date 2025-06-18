@@ -11,7 +11,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Удаление существующих данных из mailing_service...")
         # Удаляем данные из моделей Mailing, Message, Recipient
-        # Важно удалять в правильном порядке из-за внешних ключей
         Mailing.objects.all().delete()
         Message.objects.all().delete()
         Recipient.objects.all().delete()

@@ -15,13 +15,12 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING('Группа "Менеджеры" уже существует.'))
 
-        # Получаем ContentType для ваших моделей
+        # Получаем ContentType для наших моделей
         mailing_ct = ContentType.objects.get_for_model(Mailing)
         message_ct = ContentType.objects.get_for_model(Message)
         recipient_ct = ContentType.objects.get_for_model(Recipient)
 
         # Определяем права, которые нужно назначить менеджерам
-        # Это пример, настройте согласно вашему ТЗ
         permissions_to_add = [
             # Права на просмотр всех рассылок, сообщений, получателей
             'can_view_all_mailings',

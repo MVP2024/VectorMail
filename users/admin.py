@@ -5,7 +5,7 @@ from .models import User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    # Добавляем ваши кастомные поля в админ-панель
+    # Добавляем наши кастомные поля в админ-панель
     fieldsets = UserAdmin.fieldsets + (
         (None, {'fields': ('patronymic', 'birth_date', 'phone_number', 'avatar', 'country')}),
     )

@@ -1,5 +1,5 @@
 from .models import Mailing, Recipient, MailingAttempt
-from django.core.cache import cache  # Добавьте этот импорт
+from django.core.cache import cache
 
 
 def mailing_counts(request):

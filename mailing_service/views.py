@@ -93,7 +93,7 @@ class OwnerRequiredMixin(AccessMixin):
 
 
 @cache_page(60 * 1)  # Кешировать страницу на 1 минуту (60 секунд)
-@vary_on_cookie  # Кешировать отдельно для каждого пользователя (по кукам сессии)
+@vary_on_cookie
 def home_view(request):
     return render(request, 'index.html')
 
@@ -118,7 +118,7 @@ class RecipientListView(CustomLoginRequiredMixin, ListView):
                 # Менеджеры видят всех получателей
                 recipients_queryset = super().get_queryset()
             else:
-                # Обычные пользователи - только своих
+                # А обычные пользователи - только своих
                 recipients_queryset = super().get_queryset().filter(owner=user)
 
             # Кешируем результат на 5 минут (300 секунд)
@@ -182,7 +182,7 @@ class MessageListView(CustomLoginRequiredMixin, ListView):
                 # Менеджеры видят все сообщения
                 messages_queryset = super().get_queryset()
             else:
-                # Обычные пользователи - только свои
+                # А обычные пользователи - только свои
                 messages_queryset = super().get_queryset().filter(owner=user)
 
             # Кешируем результат на 5 минут (300 секунд)
@@ -259,7 +259,7 @@ class MailingListView(CustomLoginRequiredMixin, ListView):
                 # Менеджеры видят все рассылки
                 mailings_queryset = super().get_queryset()
             else:
-                # Обычные пользователи - только свои
+                # А обычные пользователи - только свои
                 mailings_queryset = super().get_queryset().filter(owner=user)
 
             # Кешируем результат на 5 минут (300 секунд)

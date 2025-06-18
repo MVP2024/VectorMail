@@ -64,7 +64,6 @@
                                         <button type="submit" class="btn btn-secondary">Остановить</button>
                                     </form>
                                 {% endif %}
-                                {# Новая кнопка "Отправить" #}
                                 {% if mailing.status != 'completed' %} {# Кнопка видна, если рассылка не завершена #}
                                     <form action="{% url 'send_single_mailing' mailing.pk %}" method="post"
                                           style="display:inline;">
