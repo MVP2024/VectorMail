@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои сообщения{% endblock %}
+{% block content %}
+    <div class="container-fluid">
+        <h1 class="mb-4">Мои сообщения</h1>
+        <div class="mb-4">
+            <a href="{% url 'add_message' %}" class="btn btn-primary">Создать новое сообщение</a>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for message in messages %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Тема сообщения: {{ message.subject }}</h5>
+                            <p class="card-text"><strong>Сообщение:</strong></p>
+                            <div class="message-body-preview mb-3">
+                                {{ message.body|truncatechars:150 }} {# Обрезаем длинные сообщения для превью #}
+                            </div>
+                            <p class="card-text"><small class="text-muted">Дата
+                                создания: {{ message.created_at|date:"d.m.Y H:i" }}</small></p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0">
+                            <a href="{% url 'message_detail' message.pk %}" class="btn btn-success">Посмотреть</a>
+                            {% if message.owner == request.user or request.user.is_staff %}
+                                <a href="{% url 'edit_message' message.pk %}" class="btn btn-warning text-dark">Редактировать</a>
+                                <a href="{% url 'delete_message' message.pk %}" class="btn btn-danger">Удалить</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center" role="alert">
+                        <p>У вас пока нет сообщений.</p>
+                        <a href="{% url 'messages' %}" class="btn btn-info mt-2">Загрузить сообщения из БД.</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col text-center">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">Вернуться на главную</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,368 @@
+[
+{
+  "model": "mailing_service.recipient",
+  "pk": 1,
+  "fields": {
+    "first_name": "Апельсин",
+    "last_name": "Оранжевый",
+    "patronymic": "Сладкий",
+    "email": "a@h.com",
+    "comment": "Этот должен работать много",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.recipient",
+  "pk": 2,
+  "fields": {
+    "first_name": "Большой",
+    "last_name": "Жёлтый",
+    "patronymic": "Банан",
+    "email": "b@b.com",
+    "comment": "Этот играет в моей команда в Call of Duty IV",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.recipient",
+  "pk": 3,
+  "fields": {
+    "first_name": "Мандарин",
+    "last_name": "Молодой",
+    "patronymic": "Ароматный",
+    "email": "m@m.com",
+    "comment": "Всё время хочет отпуск в летние месяцы",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.recipient",
+  "pk": 4,
+  "fields": {
+    "first_name": "Старая",
+    "last_name": "Альцгеймер",
+    "patronymic": "Карета",
+    "email": "s@s.com",
+    "comment": "Дункан Маклауд",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.recipient",
+  "pk": 5,
+  "fields": {
+    "first_name": "Ян",
+    "last_name": "Альцгеймер",
+    "patronymic": "Сигизмундович",
+    "email": "alc@s.com",
+    "comment": "Скоро 100 лет. Любит спорт.",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.recipient",
+  "pk": 6,
+  "fields": {
+    "first_name": "Прасковья",
+    "last_name": "Молодая",
+    "patronymic": "Петровна",
+    "email": "p@p.com",
+    "comment": "любительница гаджетов",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.recipient",
+  "pk": 7,
+  "fields": {
+    "first_name": "Александра",
+    "last_name": "Непомнящая",
+    "patronymic": "Викторовна",
+    "email": "a@v.com",
+    "comment": "автоблогер",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.recipient",
+  "pk": 8,
+  "fields": {
+    "first_name": "Илья",
+    "last_name": "Балаболов",
+    "patronymic": "Инзирович",
+    "email": "i@i.com",
+    "comment": "Любитель брендов.",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 1,
+  "fields": {
+    "subject": "Отпуск",
+    "body": "Кто хочет в отпуск в летние месяцы, начинающиеся на \"И\", тех отправлять в отпуск в месяцы, начинающиеся на \"И\":\r\nИябрь, Инварь, Ивраль.",
+    "created_at": "2025-06-14T14:42:51.261Z",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 2,
+  "fields": {
+    "subject": "Акция",
+    "body": "Здравствуйте! В связи Вашим 98-летием, дарим Вам скидку в 15% на скакалку.",
+    "created_at": "2025-06-14T14:46:44.285Z",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 3,
+  "fields": {
+    "subject": "Игрок",
+    "body": "На работе играть нельзя. Только вне рабочего времени.",
+    "created_at": "2025-06-14T14:48:08.344Z",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 4,
+  "fields": {
+    "subject": "Про успех в работе",
+    "body": "Если перевыполнить план, то повысят план, а зарплату нет.",
+    "created_at": "2025-06-14T14:50:34.458Z",
+    "owner": null
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 5,
+  "fields": {
+    "subject": "Акция",
+    "body": "В связи предстоящим вашим 98 летием, дарим Вам скидку в 40% на скакалку.",
+    "created_at": "2025-06-15T10:08:01.013Z",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 6,
+  "fields": {
+    "subject": "Полезные советы и лайфхаки",
+    "body": "У нас Вы найдёте самое лучшее. Без лишней воды. Только по существу и по всем нюансам.",
+    "created_at": "2025-06-15T10:11:08.982Z",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 7,
+  "fields": {
+    "subject": "Автомобили",
+    "body": "У нас новые поступления самого экологичного автомобиля Lada Future. Купе I. Кроссовер II. Седан С, Е классов.  Электростатический генератор.  2 электромотора в сумме 320-620 л.с.",
+    "created_at": "2025-06-15T10:15:26.730Z",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 8,
+  "fields": {
+    "subject": "Строительство",
+    "body": "Здесь Вы найдёте товары известных брендов,  для строительства по ценам ниже рынка.",
+    "created_at": "2025-06-15T10:16:41.133Z",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 9,
+  "fields": {
+    "subject": "Одежда",
+    "body": "Лучшие бренды с доставкой на дом.",
+    "created_at": "2025-06-15T10:17:13.823Z",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 10,
+  "fields": {
+    "subject": "Гаджеты",
+    "body": "У нас Вы найдёте или подберёте по подробным параметрам любой гаджет.",
+    "created_at": "2025-06-15T10:18:35.219Z",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.message",
+  "pk": 11,
+  "fields": {
+    "subject": "Аксессуары",
+    "body": "В нашем магазине вы найдёте лучшие аксессуары по лучшим ценам.",
+    "created_at": "2025-06-15T10:20:02.159Z",
+    "owner": 1
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 1,
+  "fields": {
+    "first_send_datetime": "2025-06-14T15:30:00Z",
+    "end_send_datetime": "2025-06-14T15:40:00Z",
+    "status": "created",
+    "message": 2,
+    "owner": null,
+    "recipients": [
+      4
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 2,
+  "fields": {
+    "first_send_datetime": "2025-06-14T15:35:00Z",
+    "end_send_datetime": "2025-06-14T15:40:00Z",
+    "status": "created",
+    "message": 1,
+    "owner": null,
+    "recipients": [
+      1
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 3,
+  "fields": {
+    "first_send_datetime": "2025-06-14T15:50:00Z",
+    "end_send_datetime": "2025-06-14T16:00:00Z",
+    "status": "created",
+    "message": 3,
+    "owner": null,
+    "recipients": [
+      4,
+      2,
+      3,
+      1
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 4,
+  "fields": {
+    "first_send_datetime": "2025-06-14T15:44:00Z",
+    "end_send_datetime": "2025-06-14T15:52:00Z",
+    "status": "created",
+    "message": 4,
+    "owner": null,
+    "recipients": [
+      4,
+      2,
+      3,
+      1
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 5,
+  "fields": {
+    "first_send_datetime": "2025-06-15T10:29:00Z",
+    "end_send_datetime": "2025-06-15T10:30:00Z",
+    "status": "created",
+    "message": 9,
+    "owner": 1,
+    "recipients": [
+      8
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 6,
+  "fields": {
+    "first_send_datetime": "2025-06-15T10:28:00Z",
+    "end_send_datetime": "2025-06-15T10:29:00Z",
+    "status": "created",
+    "message": 5,
+    "owner": 1,
+    "recipients": [
+      5
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 7,
+  "fields": {
+    "first_send_datetime": "2025-06-15T10:30:00Z",
+    "end_send_datetime": "2025-06-15T10:31:00Z",
+    "status": "running",
+    "message": 7,
+    "owner": 1,
+    "recipients": [
+      6
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 8,
+  "fields": {
+    "first_send_datetime": "2025-06-15T10:30:00Z",
+    "end_send_datetime": "2025-06-15T10:30:00Z",
+    "status": "created",
+    "message": 10,
+    "owner": 1,
+    "recipients": [
+      7
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 9,
+  "fields": {
+    "first_send_datetime": "2025-06-15T10:34:00Z",
+    "end_send_datetime": "2025-06-15T10:35:00Z",
+    "status": "created",
+    "message": 8,
+    "owner": 1,
+    "recipients": [
+      7
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 10,
+  "fields": {
+    "first_send_datetime": "2025-06-15T10:56:00Z",
+    "end_send_datetime": "2025-06-15T10:57:00Z",
+    "status": "running",
+    "message": 7,
+    "owner": 1,
+    "recipients": [
+      5
+    ]
+  }
+},
+{
+  "model": "mailing_service.mailing",
+  "pk": 11,
+  "fields": {
+    "first_send_datetime": "2025-06-15T11:12:00Z",
+    "end_send_datetime": "2025-06-15T11:13:00Z",
+    "status": "created",
+    "message": 8,
+    "owner": 1,
+    "recipients": [
+      7
+    ]
+  }
+}
+]

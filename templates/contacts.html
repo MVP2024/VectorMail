@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Контакты - VectorMail{% endblock %}
+
+{% block content %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Контакты</h1>
+</div>
+
+<div class="container">
+    <div class="row text-start">
+        <div class="col-lg-9 col-md-6 col-sm-12">
+            <div class="card mb-4 box-shadow">
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <tr>
+                            <td class="w-25">Страна</td>
+                            <td>{{ contact_info.country }}</td>
+                        </tr>
+                        <tr>
+                            <td class="w-25">ИНН</td>
+                            <td>{{ contact_info.inn }}</td>
+                        </tr>
+                        <tr>
+                            <td class="w-25">Адрес</td>
+                            <td>{{ contact_info.address }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card mb-4 box-shadow">
+                <div class="card-header">
+                    <h4 class="my-0 font-weight-normal">Свяжитесь с нами</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {# Отображаем поля формы, используя Bootstrap классы #}
+                        {% for field in form %}
+                            <div class="row mb-3">
+                                <label for="{{ field.id_for_label }}"
+                                       class="col-sm-4 col-form-label">{{ field.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                        <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    {% for error in field.errors %}
+                                        <div class="alert alert-danger mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                <button type="submit" class="btn btn-lg btn-block btn-outline-primary">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

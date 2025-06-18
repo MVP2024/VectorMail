@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if is_edit %}Редактировать получателя{% else %}Добавить получателя{% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h4 class="mb-0">
+                            {% if is_edit %}Редактирование получателя рассылки{% else %}Добавление нового получателя
+                                рассылки{% endif %}
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="mb-3 row align-items-center">
+                                <label for="{{ form.last_name.id_for_label }}"
+                                       class="col-sm-4 col-form-label">Фамилия</label>
+                                <div class="col-sm-8">
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger">{{ form.last_name.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3 row align-items-center">
+                                <label for="{{ form.first_name.id_for_label }}"
+                                       class="col-sm-4 col-form-label">Имя</label>
+                                <div class="col-sm-8">
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger">{{ form.first_name.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3 row align-items-center">
+                                <label for="{{ form.patronymic.id_for_label }}"
+                                       class="col-sm-4 col-form-label">Отчество</label>
+                                <div class="col-sm-8">
+                                    {{ form.patronymic }}
+                                    {% if form.patronymic.errors %}
+                                        <div class="text-danger">{{ form.patronymic.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3 row align-items-center">
+                                <label for="{{ form.email.id_for_label }}" class="col-sm-4 col-form-label">Email
+                                    получателя</label>
+                                <div class="col-sm-8">
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">{{ form.email.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-4 row">
+                                <label for="{{ form.comment.id_for_label }}"
+                                       class="col-sm-4 col-form-label">Комментарий</label>
+                                <div class="col-sm-8">
+                                    {{ form.comment }}
+                                    {% if form.comment.errors %}
+                                        <div class="text-danger">{{ form.comment.errors }}</div>{% endif %}
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-start gap-3">
+                                <button type="submit" class="btn btn-success">Сохранить</button>
+                                {% if is_edit %}
+                                    <a href="{% url 'delete_recipient' object.pk %}" class="btn btn-danger">Удалить</a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col text-end">
+                <a href="{% url 'clients' %}" class="btn btn-outline-secondary">Вернуться в мои получатели</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

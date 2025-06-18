@@ -1,0 +1,64 @@
+{# D:/Project/courses/VectorMail/templates/list_recipients.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои получатели рассылок{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h1 class="mb-4">Мои получатели рассылок</h1>
+
+        <div class="mb-4">
+            <a href="{% url 'add_recipient' %}" class="btn btn-primary">Добавить нового получателя</a>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for recipient in recipients %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                {% if recipient.first_name or recipient.last_name %}
+                                    {{ recipient.last_name|default:"" }} {{ recipient.first_name|default:"" }}
+                                    {{ recipient.patronymic|default:"" }}
+                                {% else %}
+                                    Без имени
+                                {% endif %}
+                            </h5>
+                            <p class="card-text"><strong>Email:</strong> {{ recipient.email }}</p>
+                            <p class="card-text"><strong>Комментарий:</strong>
+                                {% if recipient.comment %}
+                                    {{ recipient.comment|truncatechars:100 }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0 d-flex justify-content-start gap-5 flex-wrap">
+                            {% if recipient.owner == request.user or request.user.is_staff %}
+                                <a href="{% url 'edit_recipient' recipient.pk %}"
+                                   class="btn btn-warning text-dark">Редактировать</a>
+                                <a href="{% url 'delete_recipient' recipient.pk %}"
+                                   class="btn btn-danger">Удалить</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center" role="alert">
+                        <p>У вас пока нет получателей рассылок.</p>
+                        <a href="{% url 'clients' %}" class="btn btn-info mt-2">Загрузить получателей рассылок из
+                            БД.</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col text-center">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">Вернуться на главную</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -7,4 +7,6 @@ exclude =
     .venv,
     dist,
     .idea,
-    .env
+    .\env,
+    venv,
+    env

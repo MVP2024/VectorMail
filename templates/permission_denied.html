@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Доступ запрещен{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card mt-5">
+                    <div class="card-header text-center">
+                        <h3>Доступ запрещен</h3>
+                    </div>
+                    <div class="card-body text-center">
+                        <p>У вас недостаточно прав для доступа к этой странице или выполнения этого действия.</p>
+                        <p>Пожалуйста, за дополнительной информацией обратитесь к администратору.</p>
+                        <a href="{% url 'home' %}" class="btn btn-primary mt-3">Вернуться на главную</a>
+                        {% if not request.user.is_authenticated %}
+                            <p class="mt-3">Если у вас нет аккаунта, вы можете <a href="{% url 'users:register' %}">зарегистрироваться</a>.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Подтверждение email{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mt-5">
+                <div class="card-header text-center">
+                    <h3>Подтверждение регистрации</h3>
+                </div>
+                <div class="card-body text-center">
+                    <p>Мы отправили письмо на ваш email для подтверждения регистрации. Пожалуйста, проверьте свою почту (включая папку "Спам") и перейдите по ссылке для активации аккаунта.</p>
+                    <p>После активации вы сможете войти в систему.</p>
+                    <a href="{% url 'users:login' %}" class="btn btn-primary mt-3">Перейти на страницу входа</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

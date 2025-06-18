@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мои рассылки{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h1 class="mb-4">Мои рассылки</h1>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'create_mailing' %}" class="btn btn-primary">Создать новую рассылку</a>
+            <div class="btn-group" role="group" aria-label="Фильтр рассылок по статусу">
+                <a href="{% url 'mailings' %}"
+                   class="btn btn-outline-secondary {% if not request.resolver_match.kwargs.status_filter %}active{% endif %}">Все</a>
+                <a href="{% url 'mailings_created' %}"
+                   class="btn btn-outline-secondary {% if request.resolver_match.kwargs.status_filter == 'created' %}active{% endif %}">Создана</a>
+                <a href="{% url 'mailings_running' %}"
+                   class="btn btn-outline-secondary {% if request.resolver_match.kwargs.status_filter == 'running' %}active{% endif %}">Запущена</a>
+                <a href="{% url 'mailings_completed' %}"
+                   class="btn btn-outline-secondary {% if request.resolver_match.kwargs.status_filter == 'completed' %}active{% endif %}">Завершена</a>
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for mailing in mailings %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Тема сообщения: {{ mailing.message.subject }}</h5>
+                            <p class="card-text"><strong>Сообщение:</strong></p>
+                            <div class="message-body-preview mb-3">
+                                {{ mailing.message.body|truncatechars:150 }} {# Обрезаем длинные сообщения для превью #}
+                            </div>
+                            <p class="card-text"><strong>Получатели:</strong>
+                                {% for recipient in mailing.recipients.all %}
+                                    {{ recipient.email }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    Нет получателей
+                                {% endfor %}
+                            </p>
+                            <p class="card-text"><strong>Статус:</strong> {{ mailing.get_status_display }}</p>
+                            <p class="card-text"><small
+                                    class="text-muted">Начало: {{ mailing.first_send_datetime|date:"d.m.Y H:i" }}</small>
+                            </p>
+                            <p class="card-text"><small
+                                    class="text-muted">Окончание: {{ mailing.end_send_datetime|date:"d.m.Y H:i" }}</small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent border-top-0 d-flex justify-content-start gap-2 flex-wrap">
+                            <a href="{% url 'message_detail' mailing.message.pk %}"
+                               class="btn btn-success">Посмотреть</a>
+                            {% if mailing.owner == request.user or request.user.is_staff %}
+                                <a href="{% url 'edit_mailing' mailing.pk %}" class="btn btn-warning text-dark">Редактировать</a>
+                                {% if mailing.status == 'created' %}
+                                    <form action="{% url 'toggle_mailing_status' mailing.pk %}" method="post"
+                                          style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-info">Запустить</button>
+                                    </form>
+                                {% elif mailing.status == 'running' %}
+                                    <form action="{% url 'toggle_mailing_status' mailing.pk %}" method="post"
+                                          style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-secondary">Остановить</button>
+                                    </form>
+                                {% endif %}
+                                {% if mailing.status != 'completed' %} {# Кнопка видна, если рассылка не завершена #}
+                                    <form action="{% url 'send_single_mailing' mailing.pk %}" method="post"
+                                          style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-primary">Отправить</button>
+                                    </form>
+                                {% endif %}
+                                <a href="{% url 'delete_mailing' mailing.pk %}" class="btn btn-danger">Удалить</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info text-center" role="alert">
+                        <p>У вас пока нет рассылок.</p>
+                        <a href="{% url 'mailings' %}" class="btn btn-info mt-2">Загрузить рассылки из БД</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col text-center">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">Вернуться на главную</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
