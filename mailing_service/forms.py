@@ -3,6 +3,11 @@ from django import forms
 
 
 class RecipientForm(forms.ModelForm):
+    """Форма для создания и редактирования получателей.
+        Включает поля: фамилия, имя, отчество, email, комментарий.
+        Применяет стилизацию Bootstrap к полям ввода.
+    """
+
     class Meta:
         model = Recipient
         fields = ['last_name', 'first_name', 'patronymic', 'email', 'comment']
@@ -22,6 +27,11 @@ class RecipientForm(forms.ModelForm):
 
 
 class MailingForm(forms.ModelForm):
+    """Форма для создания/редактирования рассылки.
+        Фильтрует доступные сообщения и получателей по владельцу.
+        Поддерживает выбор даты/времени и статуса рассылки.
+    """
+
     class Meta:
         model = Mailing
         fields = ['message', 'recipients', 'first_send_datetime', 'end_send_datetime', 'status']
@@ -48,6 +58,9 @@ class MailingForm(forms.ModelForm):
 
 
 class MailingSendForm(forms.Form):
+    """Форма для выбора рассылки к отправке.
+        Отображает только рассылки, принадлежащие текущему пользователю.
+    """
     mailing = forms.ModelChoiceField(
         queryset=Mailing.objects.none(),
         label="Выберите рассылку для отправки",
@@ -64,6 +77,9 @@ class MailingSendForm(forms.Form):
 
 
 class MessageForm(forms.ModelForm):
+    """Форма для создания/редактирования сообщений.
+        Проверяет на наличие запрещенных слов в теме и теле письма.
+    """
     FORBIDDEN_WORDS = [
         'казино', 'криптовалюта', 'крипта', 'биржа', 'дешево',
         'бесплатно', 'обман', 'полиция', 'радар'
@@ -103,6 +119,9 @@ class MessageForm(forms.ModelForm):
 
 
 class ContactForm(forms.Form):
+    """Форма обратной связи для пользователей.
+        Содержит поля: имя, email, текст сообщения.
+    """
     name = forms.CharField(max_length=100,
                            widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ваше имя'}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Ваш Email'}))

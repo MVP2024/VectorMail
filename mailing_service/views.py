@@ -17,8 +17,9 @@ from .models import Mailing, Recipient, Message, MailingAttempt
 
 class CustomLoginRequiredMixin(AccessMixin):
     """
-    Миксин, который перенаправляет неавторизованных пользователей на главную страницу
-    и показывает сообщение об отсутствии прав.
+    Миксин для проверки аутентификации пользователя.
+    Перенаправляет неавторизованных пользователей на главную страницу
+    с сообщением о необходимости входа/регистрации.
     """
 
     def dispatch(self, request, *args, **kwargs):
@@ -33,10 +34,9 @@ class CustomLoginRequiredMixin(AccessMixin):
 
 class OwnerRequiredMixin(AccessMixin):
     """
-    Миксин, который проверяет, является ли текущий пользователь владельцем объекта.
-    Если нет, перенаправляет на страницу permission_denied.html с сообщением об ошибке.
-    Предполагает, что view имеет метод get_object() для получения объекта.
-    Эта проверка применяется ко всем авторизованным пользователям.
+    Миксин для проверки владельца объекта.
+    Проверяет, является ли текущий пользователь владельцем объекта
+    или имеет ли он специальные права для доступа.
     """
     permission_denied_message = "У Вас недостаточно прав для выполнения этого действия."
 
@@ -92,13 +92,12 @@ class OwnerRequiredMixin(AccessMixin):
         return reverse_lazy('permission_denied')
 
 
-@cache_page(60 * 1)  # Кешировать страницу на 1 минуту (60 секунд)
-@vary_on_cookie
-def home_view(request):
-    return render(request, 'index.html')
-
-
 class RecipientListView(CustomLoginRequiredMixin, ListView):
+    """
+        Список получателей с кешированием.
+        Отображает всех получателей для менеджеров
+        и только собственных получателей для обычных пользователей.
+    """
     model = Recipient
     template_name = 'list_recipients.html'
     context_object_name = 'recipients'
@@ -127,6 +126,10 @@ class RecipientListView(CustomLoginRequiredMixin, ListView):
 
 
 class RecipientFormView(OwnerRequiredMixin, CustomLoginRequiredMixin, CreateView, UpdateView):
+    """
+        Создание/редактирование получателя с проверкой прав.
+        Автоматически назначает текущего пользователя владельцем.
+    """
     model = Recipient
     form_class = RecipientForm
     template_name = 'add_new_recipient.html'
@@ -151,6 +154,11 @@ class RecipientFormView(OwnerRequiredMixin, CustomLoginRequiredMixin, CreateView
 
 
 class RecipientDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView):
+    """
+        Удаление получателя с проверкой прав.
+        Позволяет удалять только собственные получатели
+        или при наличии соответствующих прав.
+    """
     model = Recipient
     template_name = 'recipient_confirm_delete.html'
     success_url = reverse_lazy('clients')
@@ -163,6 +171,11 @@ class RecipientDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteVi
 
 
 class MessageListView(CustomLoginRequiredMixin, ListView):
+    """
+        Список сообщений с кешированием.
+        Отображает все сообщения для менеджеров
+        и только собственные сообщения для обычных пользователей.
+    """
     model = Message
     template_name = 'list_messages.html'
     context_object_name = 'messages'
@@ -191,6 +204,11 @@ class MessageListView(CustomLoginRequiredMixin, ListView):
 
 
 class MessageDetailView(OwnerRequiredMixin, CustomLoginRequiredMixin, DetailView):
+    """
+        Детальный просмотр сообщения с проверкой прав.
+        Позволяет просматривать только собственные сообщения
+        или при наличии соответствующих прав.
+    """
     model = Message
     template_name = 'message_detail.html'
     context_object_name = 'message'
@@ -203,6 +221,10 @@ class MessageDetailView(OwnerRequiredMixin, CustomLoginRequiredMixin, DetailView
 
 
 class MessageCreateUpdateView(OwnerRequiredMixin, CustomLoginRequiredMixin, CreateView, UpdateView):
+    """
+        Создание/редактирование сообщения с проверкой прав.
+        Автоматически назначает текущего пользователя владельцем.
+    """
     model = Message
     form_class = MessageForm
     template_name = 'add_new_messages.html'
@@ -228,6 +250,11 @@ class MessageCreateUpdateView(OwnerRequiredMixin, CustomLoginRequiredMixin, Crea
 
 
 class MessageDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView):
+    """
+        Удаление сообщения с проверкой прав.
+        Позволяет удалять только собственные сообщения
+        или при наличии соответствующих прав.
+    """
     model = Message
     template_name = 'message_confirm_delete.html'
     success_url = reverse_lazy('messages')
@@ -240,6 +267,11 @@ class MessageDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView
 
 
 class MailingListView(CustomLoginRequiredMixin, ListView):
+    """
+        Список рассылок с кешированием.
+        Отображает все рассылки для менеджеров
+        и только собственные рассылки для обычных пользователей.
+    """
     model = Mailing
     template_name = 'mailing_list.html'
     context_object_name = 'mailings'
@@ -268,6 +300,10 @@ class MailingListView(CustomLoginRequiredMixin, ListView):
 
 
 class MailingCreateUpdateView(OwnerRequiredMixin, CustomLoginRequiredMixin, CreateView, UpdateView):
+    """
+        Создание/редактирование рассылки с проверкой прав.
+        Автоматически назначает текущего пользователя владельцем.
+    """
     model = Mailing
     form_class = MailingForm
     template_name = 'creating_mailing.html'
@@ -299,6 +335,11 @@ class MailingCreateUpdateView(OwnerRequiredMixin, CustomLoginRequiredMixin, Crea
 
 
 class MailingDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView):
+    """
+        Удаление рассылки с проверкой прав.
+        Позволяет удалять только собственные рассылки
+        или при наличии соответствующих прав.
+    """
     model = Mailing
     template_name = 'mailing_confirm_delete.html'
     success_url = reverse_lazy('mailings')
@@ -311,6 +352,10 @@ class MailingDeleteView(OwnerRequiredMixin, CustomLoginRequiredMixin, DeleteView
 
 
 class FilteredMailingListView(CustomLoginRequiredMixin, ListView):
+    """
+    Список рассылок с фильтрацией по статусу.
+    Отображает рассылки в зависимости от их статуса.
+    """
     model = Mailing
     template_name = 'mailing_list.html'
     context_object_name = 'mailings'
@@ -340,6 +385,11 @@ class FilteredMailingListView(CustomLoginRequiredMixin, ListView):
 
 
 class MailingAttemptListView(CustomLoginRequiredMixin, ListView):
+    """
+        Список попыток рассылки.
+        Отображает все попытки для менеджеров
+        и только собственные попытки для обычных пользователей.
+    """
     model = MailingAttempt
     template_name = 'mailing_attempts.html'
     context_object_name = 'attempts'
@@ -352,9 +402,20 @@ class MailingAttemptListView(CustomLoginRequiredMixin, ListView):
         return super().get_queryset().filter(mailing__owner=self.request.user)
 
 
+@cache_page(60 * 1)  # Кешировать страницу на 1 минуту (60 секунд)
+@vary_on_cookie
+def home_view(request):
+    """
+        Главная страница приложения.
+        Отображает начальный интерфейс для авторизованных/неавторизованных пользователей.
+    """
+    return render(request, 'index.html')
+
+
 def feature_list_view(request):
     """
-    Отображает список функций сайта, сгруппированных по категориям.
+    Страница со списком функций приложения.
+    Отображает функции, сгруппированные по категориям.
     """
     features = get_categorized_features()
     return render(request, 'feature_list.html', {'categorized_features': features})
@@ -365,7 +426,7 @@ def feature_list_view(request):
 def toggle_mailing_status(request, pk):
     """
     Переключает статус рассылки между 'created' и 'running'.
-    Менеджеры могут отключать любые рассылки при наличии соответствующих прав.
+    Проверяет права доступа перед изменением статуса.
     """
     mailing = get_object_or_404(Mailing, pk=pk)
 
@@ -388,12 +449,10 @@ def toggle_mailing_status(request, pk):
 
 @login_required
 @require_POST
-@login_required
-@require_POST
 def send_single_mailing(request, pk):
     """
-    Отправляет письма для одной конкретной рассылки.
-    Менеджеры могут отправлять любые рассылки при наличии соответствующих прав.
+    Отправляет письма для конкретной рассылки.
+    Проверяет права доступа перед отправкой.
     """
     mailing = get_object_or_404(Mailing, pk=pk)
 
@@ -459,6 +518,10 @@ def send_single_mailing(request, pk):
 
 
 def send_mailing_view(request):
+    """
+        Страница выбора и отправки рассылки.
+        Обрабатывает форму выбора рассылки и отправку писем.
+    """
     if not request.user.is_authenticated:
         messages.error(request,
                        "Вы не можете просматривать и управлять сообщениями, рассылками, получателями,"
@@ -536,6 +599,10 @@ def send_mailing_view(request):
 
 
 def contacts_view(request):
+    """
+        Страница контактов.
+        Отображает контактную информацию и форму обратной связи.
+    """
     contact_info = {
         'country': 'Россия',
         'inn': '1234567890',
