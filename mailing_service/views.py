@@ -36,8 +36,7 @@ class OwnerRequiredMixin(AccessMixin):
     Миксин, который проверяет, является ли текущий пользователь владельцем объекта.
     Если нет, перенаправляет на страницу permission_denied.html с сообщением об ошибке.
     Предполагает, что view имеет метод get_object() для получения объекта.
-    Эта проверка применяется ко всем авторизованным пользователям, кроме персонала.
-    Персонал (is_staff) имеет полный доступ.
+    Эта проверка применяется ко всем авторизованным пользователям.
     """
     permission_denied_message = "У Вас недостаточно прав для выполнения этого действия."
 
@@ -50,31 +49,44 @@ class OwnerRequiredMixin(AccessMixin):
             # Если пользователь не авторизован, перенаправляем на страницу входа
             return self.handle_no_permission()
 
-        # Если пользователь является персоналом, он имеет полный доступ
-        if request.user.is_staff:
-            return super().dispatch(request, *args, **kwargs)
-
         self.object = None
         if 'pk' in kwargs:
             try:
-                # Пытаемся получить объект по PK.
-                # Если объект не существует, то это вызовет ошибку 404.
-                # Если объект существует, но владелец не совпадает, мы перехватим его.
                 self.object = super().get_object()
             except self.model.DoesNotExist:
-                # Если объект не существует, позволяем вызвать 404.
-                # Это не ошибка прав, а ошибка "не найдено".
-                raise
+                raise  # Позволяем Django обработать 404 для несуществующих объектов
             except Exception as e:
                 messages.error(request, f"Произошла ошибка при получении объекта: {e}")
                 return redirect(self.get_redirect_url())
 
-            # Проверяем владение объектом для обычных пользователей
-            if self.object and self.object.owner != request.user:
+            # Если пользователь является владельцем объекта, разрешаем доступ
+            if self.object and self.object.owner == request.user:
+                return super().dispatch(request, *args, **kwargs)
+
+            # Если пользователь не является владельцем, проверяем наличие специфических прав
+            model_name = self.model.__name__.lower()  # Например, 'mailing', 'message', 'recipient'
+            required_permission = None
+
+            if isinstance(self, (CreateView, UpdateView)):
+                required_permission = f'mailing_service.can_edit_all_{model_name}s'
+            elif isinstance(self, DeleteView):
+                required_permission = f'mailing_service.can_delete_all_{model_name}s'
+            elif isinstance(self, DetailView):
+                required_permission = f'mailing_service.can_view_all_{model_name}s'
+
+            if required_permission and request.user.has_perm(required_permission):
+                return super().dispatch(request, *args, **kwargs)
+            else:
                 messages.error(request, self.permission_denied_message)
                 return redirect(self.get_redirect_url())
 
-        return super().dispatch(request, *args, **kwargs)
+        # Для CreateView без PK, разрешаем, если пользователь авторизован
+        # (он будет владельцем создаваемого объекта)
+        if isinstance(self, CreateView) and 'pk' not in kwargs:
+            return super().dispatch(request, *args, **kwargs)
+
+        messages.error(request, self.permission_denied_message)
+        return redirect(self.get_redirect_url())
 
     def get_redirect_url(self):
         return reverse_lazy('permission_denied')
@@ -353,13 +365,12 @@ def feature_list_view(request):
 def toggle_mailing_status(request, pk):
     """
     Переключает статус рассылки между 'created' и 'running'.
-    Менеджеры могут отключать любые рассылки. Пользователи - только свои.
+    Менеджеры могут отключать любые рассылки при наличии соответствующих прав.
     """
     mailing = get_object_or_404(Mailing, pk=pk)
 
-    # Менеджеры (is_staff) могут управлять любыми рассылками,
-    # обычные пользователи - только своими.
-    if not request.user.is_staff and mailing.owner != request.user:
+    # Если пользователь не является владельцем, проверяем наличие специфического права
+    if mailing.owner != request.user and not request.user.has_perm('mailing_service.can_toggle_any_mailing_status'):
         messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
         return redirect('mailings')
 
@@ -377,16 +388,17 @@ def toggle_mailing_status(request, pk):
 
 @login_required
 @require_POST
+@login_required
+@require_POST
 def send_single_mailing(request, pk):
     """
     Отправляет письма для одной конкретной рассылки.
-    Менеджеры могут отправлять любые рассылки. Пользователи - только свои.
+    Менеджеры могут отправлять любые рассылки при наличии соответствующих прав.
     """
     mailing = get_object_or_404(Mailing, pk=pk)
 
-    # Менеджеры (is_staff) могут отправлять любые рассылки,
-    # обычные пользователи - только свои.
-    if not request.user.is_staff and mailing.owner != request.user:
+    # Если пользователь не является владельцем, проверяем наличие специфического права
+    if mailing.owner != request.user and not request.user.has_perm('mailing_service.can_send_any_mailing'):
         messages.error(request, "У Вас недостаточно прав для выполнения этого действия.")
         return redirect('mailings')
 

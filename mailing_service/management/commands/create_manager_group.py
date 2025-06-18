@@ -31,12 +31,12 @@ class Command(BaseCommand):
             'can_toggle_any_mailing_status',
             'can_send_any_mailing',
             # Добавьте другие права, если менеджеры должны иметь возможность редактировать/удалять чужие объекты
-            'can_edit_all_mailings',
-            'can_delete_all_mailings',
-            'can_edit_all_messages',
-            'can_delete_all_messages',
-            'can_edit_all_recipients',
-            'can_delete_all_recipients',
+            # 'can_edit_all_mailings',
+            # 'can_delete_all_mailings',
+            # 'can_edit_all_messages',
+            # 'can_delete_all_messages',
+            # 'can_edit_all_recipients',
+            # 'can_delete_all_recipients',
         ]
 
         # Назначаем права группе
