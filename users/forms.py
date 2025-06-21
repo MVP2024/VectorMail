@@ -6,6 +6,11 @@ from django.db.models.fields.files import ImageFieldFile
 
 
 class UserProfileForm(forms.ModelForm):
+    """
+        Форма для редактирования профиля пользователя.
+        Включает поля: имя, фамилия, отчество, дата рождения, email, телефон, аватар, страна.
+        Реализует валидацию формата и размера аватара.
+    """
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'patronymic', 'birth_date', 'email', 'phone_number', 'avatar', 'country']
@@ -51,6 +56,11 @@ class UserProfileForm(forms.ModelForm):
 
 
 class UserRegisterForm(UserCreationForm):
+    """
+        Форма регистрации пользователя.
+        Расширяет стандартную форму регистрации дополнительными полями профиля.
+        Применяет класс 'form-control' ко всем полям, кроме паролей.
+    """
     email = forms.EmailField(required=True, widget=forms.EmailInput(
         attrs={'class': 'form-control', 'placeholder': 'email@example.com'}))
 
@@ -81,6 +91,10 @@ class UserRegisterForm(UserCreationForm):
 
 
 class UserLoginForm(AuthenticationForm):
+    """
+        Форма входа в систему.
+        Настроена с кастомными placeholder'ами и классами для полей ввода.
+    """
     username = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Имя пользователя'}))
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Пароль'}))

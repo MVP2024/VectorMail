@@ -3,6 +3,11 @@ from django.conf import settings  # Для связи с AUTH_USER_MODEL
 
 
 class Recipient(models.Model):
+    """
+        Модель для хранения информации о получателях рассылок.
+        Содержит личные данные (ФИО, email, комментарий) и связь с владельцем.
+        Реализует кастомное отображение в списке получателей.
+    """
     first_name = models.CharField(max_length=100, verbose_name="Имя", blank=True, null=True)
     last_name = models.CharField(max_length=100, verbose_name="Фамилия", blank=True, null=True)
     patronymic = models.CharField(max_length=100, verbose_name="Отчество", blank=True, null=True)
@@ -41,7 +46,9 @@ class Recipient(models.Model):
 
 class Message(models.Model):
     """
-    Модель для сообщений, используемых в рассылках.
+    Модель для хранения содержимого электронных писем.
+    Содержит тему, текст письма, дату создания и владельца.
+    Используется в качестве шаблона для рассылок.
     """
     subject = models.CharField(max_length=255, verbose_name="Тема письма")
     body = models.TextField(verbose_name="Тело письма")
@@ -65,7 +72,13 @@ class Message(models.Model):
 
 class Mailing(models.Model):
     """
-    Модель для управления рассылками.
+    Модель для управления расписанием и параметрами рассылки.
+    Содержит:
+    - временные рамки рассылки
+    - статус выполнения
+    - ссылки на сообщение и получателей
+    - владельца рассылки.
+    Реализует систему контроля статусов и прав доступа.
     """
     STATUS_CREATED = 'created'
     STATUS_RUNNING = 'running'
@@ -107,7 +120,12 @@ class Mailing(models.Model):
 
 class MailingAttempt(models.Model):
     """
-    Модель для записи каждой попытки отправки письма в рамках рассылки.
+    Модель для отслеживания отдельных попыток отправки писем.
+    Хранит информацию о:
+    - статусе попытки (успешно/ошибка)
+    - дате отправки
+    - сообщении об ошибке
+    - связях с конкретной рассылкой и получателем
     """
     # STATUS_FAILURE = None
     STATUS_SUCCESS = 'success'

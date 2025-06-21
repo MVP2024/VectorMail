@@ -31,6 +31,10 @@ class StaffRequiredMixin(AccessMixin):
 
 
 class UserProfileView(LoginRequiredMixin, UpdateView):
+    """
+        Миксин, который проверяет, является ли пользователь персоналом (is_staff=True).
+        Если нет, перенаправляет на главную страницу с сообщением об ошибке.
+    """
     model = User
     form_class = UserProfileForm
     template_name = 'users/profile_edit.html'
@@ -44,6 +48,11 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
 
 
 class RegisterUserView(CreateView):
+    """
+        Представление для регистрации нового пользователя.
+        Отправляет email с ссылкой для активации аккаунта после регистрации.
+        Использует форму UserRegisterForm и шаблон register.html.
+    """
     form_class = UserRegisterForm
     template_name = 'users/register.html'
     success_url = reverse_lazy('users:login')  # Это будет переопределено методом form_valid
@@ -69,6 +78,11 @@ class RegisterUserView(CreateView):
 
 
 class LoginUserView(LoginView):
+    """
+        Представление для входа в систему.
+        Использует форму UserLoginForm и шаблон login.html.
+        После успешного входа перенаправляет на главную страницу.
+    """
     form_class = UserLoginForm
     template_name = 'users/login.html'
 
@@ -77,11 +91,20 @@ class LoginUserView(LoginView):
 
 
 class LogoutUserView(LogoutView):
+    """
+        Представление для выхода из системы.
+        После выхода перенаправляет на страницу входа.
+    """
     next_page = reverse_lazy('users:login')  # Перенаправляем на страницу входа после выхода
 
 
 # Функциональное представление для активации аккаунта
 def activate(request, uidb64, token):
+    """
+        Активация пользователя по ссылке из email.
+        Проверяет валидность токена и включает учетную запись пользователя.
+        При успешной активации автоматически выполняет вход.
+    """
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -100,6 +123,11 @@ def activate(request, uidb64, token):
 
 
 class UserListView(StaffRequiredMixin, ListView):
+    """
+        Список всех пользователей (только для персонала).
+        Отображает пользователей в алфавитном порядке по username.
+        Использует шаблон user_list.html.
+    """
     model = User
     template_name = 'users/user_list.html'
     context_object_name = 'users'
@@ -107,6 +135,11 @@ class UserListView(StaffRequiredMixin, ListView):
 
 
 class ToggleUserActiveStatusView(StaffRequiredMixin, View):
+    """
+        Представление для блокировки/разблокировки пользователей (только для персонала).
+        Запрещает пользователям блокировать самих себя.
+        Обновляет статус is_active и показывает соответствующее сообщение.
+    """
 
     def post(self, request, pk):
         user_to_toggle = get_object_or_404(User, pk=pk)

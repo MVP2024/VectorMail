@@ -4,10 +4,13 @@ from django.contrib.contenttypes.models import ContentType
 from mailing_service.models import Mailing, Message, Recipient
 
 
+# Класс Command - это Django-команда для управления группами пользователей
 class Command(BaseCommand):
     help = 'Создает группу "Менеджеры" и назначает ей необходимые права.'
 
+    # Основной метод, который выполняется при запуске команды
     def handle(self, *args, **options):
+        # Создает группу "Менеджеры" если она не существует
         manager_group, created = Group.objects.get_or_create(name='Менеджеры')
 
         if created:
@@ -15,14 +18,14 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING('Группа "Менеджеры" уже существует.'))
 
-        # Получаем ContentType для наших моделей
+        # Получает типы содержимого для моделей (нужно для получения прав)
         mailing_ct = ContentType.objects.get_for_model(Mailing)
         message_ct = ContentType.objects.get_for_model(Message)
         recipient_ct = ContentType.objects.get_for_model(Recipient)
 
-        # Определяем права, которые нужно назначить менеджерам
+        # Список прав, которые должны быть у менеджеров
         permissions_to_add = [
-            # Права на просмотр всех рассылок, сообщений, получателей
+            # Права на просмотр всех объектов
             'can_view_all_mailings',
             'can_view_all_messages',
             'can_view_all_recipients',
@@ -38,7 +41,7 @@ class Command(BaseCommand):
             # 'can_delete_all_recipients',
         ]
 
-        # Назначаем права группе
+        # Проверяет и добавляет права группе
         current_permissions = manager_group.permissions.values_list('codename', flat=True)
         for perm_codename in permissions_to_add:
             if perm_codename not in current_permissions:
