@@ -25,6 +25,7 @@ VectorMail — это Django-приложение для управления э
 - 🏗️ Django 5.2
 - 📧 Email-бэкенды (console/SMTP)
 - 💾 Redis (для кеширования)
+- 🖼️ Pillow (для обработки изображений)
 
 ---
 
